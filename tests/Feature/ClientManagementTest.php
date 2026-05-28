@@ -20,50 +20,43 @@ class ClientManagementTest extends TestCase
     {
         parent::setUp();
 
-        // ✅ FIX: Use existing company ID 4 instead of creating new
-        $this->company = Company::find(1);
+        // ✅ USE existing company from seeder (ID 1)
+        $this->company = Company::first();  // NOT Company::create()
 
-        // If company 4 doesn't exist in test DB, create it
+        // If no company exists (fallback)
         if (!$this->company) {
             $this->company = Company::create([
-                'id' => 4,
                 'name' => 'Demo Business',
-                'gstin' => '29ABCDE1234F1Z5',
-                'state_code' => '29',
-                'state_name' => 'Karnataka',
+                'gstin' => '27ABCDE1234F1Z5',
+                'state_code' => '27',
+                'state_name' => 'Maharashtra',
                 'is_active' => true,
             ]);
         }
 
-        // Create roles if they don't exist
-        Role::firstOrCreate([
-            'name' => 'owner',
-            'guard_name' => 'web',
-        ]);
+        // Create roles
+        Role::firstOrCreate(['name' => 'owner', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'staff', 'guard_name' => 'web']);
 
-        Role::firstOrCreate([
-            'name' => 'staff',
-            'guard_name' => 'web',
-        ]);
-
-        // ✅ FIX: Use existing user or create with company_id 4
-        $owner = User::where('company_id', $this->company->id)->first();
-
-        if (!$owner) {
-            $owner = User::factory()->create([
-                'company_id' => $this->company->id,
-            ]);
-        }
-
-        $this->owner = $owner;
-
-        // Staff user (can be new, but with company_id = 4)
-        $this->staff = User::factory()->create([
+        // Create owner user
+        $this->owner = User::create([
+            'name' => 'Rahul Mehta',
+            'email' => 'rahul.mehta@gmail.com',
             'company_id' => $this->company->id,
+            'password' => bcrypt('password'),
+        ]);
+        $this->owner->assignRole('owner');
+
+        // Create staff user
+        $this->staff = User::create([
+            'name' => 'Staff User',
+            'email' => 'staff@example.com',
+            'company_id' => $this->company->id,
+            'password' => bcrypt('password'),
         ]);
         $this->staff->assignRole('staff');
 
-        // 🔥 CRITICAL: Set current company in session
+        // Set session
         session(['current_company_id' => $this->company->id]);
     }
 
@@ -88,6 +81,13 @@ class ClientManagementTest extends TestCase
                 'name' => 'Raj Patel',
                 'gstin' => '24ABCDE1234F1Z5',
                 'state' => 'Gujarat',
+                'state_code' => '24',
+                'state_name' => 'Gujarat',
+                'address_line_1' => 'Test Address',
+                'city' => 'Ahmedabad',
+                'pincode' => '380001',
+                'country' => 'India',
+                'is_active' => true,
             ]);
 
         $response->assertRedirect();
@@ -105,6 +105,13 @@ class ClientManagementTest extends TestCase
                 'client_type' => 'individual',
                 'name' => 'Amit Shah',
                 'state' => 'Gujarat',
+                'state_code' => '24',
+                'state_name' => 'Gujarat',
+                'address_line_1' => 'Test Address',
+                'city' => 'Ahmedabad',
+                'pincode' => '380001',
+                'country' => 'India',
+                'is_active' => true,
             ]);
 
         $response->assertRedirect();
@@ -125,6 +132,13 @@ class ClientManagementTest extends TestCase
             ->put(route('clients.update', $client), [
                 'name' => 'Updated Name',
                 'client_type' => $client->client_type,
+
+                'state_code' => '24',
+                'state_name' => 'Gujarat',
+                'address_line_1' => 'Updated Address',
+                'city' => 'Ahmedabad',
+                'pincode' => '380001',
+                'country' => 'India',
             ]);
 
         $response->assertRedirect();
@@ -158,6 +172,13 @@ class ClientManagementTest extends TestCase
                 'client_type' => 'business',
                 'company_name' => 'ABC Pvt Ltd',
                 'name' => 'Raj',
+                'state_code' => '24',
+                'state_name' => 'Gujarat',
+                'address_line_1' => 'Test Address',
+                'city' => 'Ahmedabad',
+                'pincode' => '380001',
+                'country' => 'India',
+                'is_active' => true,
             ]);
 
         $response->assertSessionHasErrors('gstin');
@@ -170,6 +191,13 @@ class ClientManagementTest extends TestCase
                 'client_type' => 'business',
                 'gstin' => '24ABCDE1234F1Z5',
                 'name' => 'Raj',
+                'state_code' => '24',
+                'state_name' => 'Gujarat',
+                'address_line_1' => 'Test Address',
+                'city' => 'Ahmedabad',
+                'pincode' => '380001',
+                'country' => 'India',
+                'is_active' => true,
             ]);
 
         $response->assertSessionHasErrors('company_name');
@@ -188,6 +216,13 @@ class ClientManagementTest extends TestCase
                 'company_name' => 'Duplicate GST',
                 'name' => 'Test',
                 'gstin' => '24ABCDE1234F1Z5',
+                'state_code' => '24',
+                'state_name' => 'Gujarat',
+                'address_line_1' => 'Test Address',
+                'city' => 'Ahmedabad',
+                'pincode' => '380001',
+                'country' => 'India',
+                'is_active' => true,
             ]);
 
         $response->assertSessionHasErrors('gstin');
@@ -201,6 +236,13 @@ class ClientManagementTest extends TestCase
                 'company_name' => 'ABC Pvt Ltd',
                 'name' => 'Raj',
                 'gstin' => 'INVALIDGSTIN',
+                'state_code' => '24',
+                'state_name' => 'Gujarat',
+                'address_line_1' => 'Test Address',
+                'city' => 'Ahmedabad',
+                'pincode' => '380001',
+                'country' => 'India',
+                'is_active' => true,
             ]);
 
         $response->assertSessionHasErrors('gstin');
@@ -234,9 +276,16 @@ class ClientManagementTest extends TestCase
     {
         $response = $this->actingAs($this->owner)
             ->post(route('clients.store'), [
-                'client_type' => 'export',
+                'client_type' => 'business',
                 'name' => 'Foreign Client',
                 'country' => 'USA',
+                'state_code' => '24',
+                'state_name' => 'Gujarat',
+                'address_line_1' => 'Test Address',
+                'city' => 'Ahmedabad',
+                'pincode' => '380001',
+                'is_active' => true,
+
             ]);
 
         $response->assertRedirect();
@@ -248,31 +297,32 @@ class ClientManagementTest extends TestCase
 
     public function test_search_clients_by_name_works(): void
     {
-        Client::factory()->create([
+        $client = Client::factory()->create([
             'company_id' => $this->company->id,
             'name' => 'Rohit Sharma',
+            'gstin' => '24ABCDE1234F1Z5',
+            'state_name' => 'Gujarat',
         ]);
 
         $response = $this->actingAs($this->owner)
             ->get('/clients/search?q=Rohit');
 
         $response->assertOk();
-
         $response->assertSee('Rohit Sharma');
     }
 
     public function test_search_clients_by_gstin_works(): void
     {
-        Client::factory()->create([
+        $client = Client::factory()->create([
             'company_id' => $this->company->id,
             'gstin' => '24ABCDE1234F1Z5',
+            'name' => 'Test Client',
         ]);
 
         $response = $this->actingAs($this->owner)
             ->get('/clients/search?q=24ABCDE');
 
         $response->assertOk();
-
         $response->assertSee('24ABCDE1234F1Z5');
     }
 
@@ -289,7 +339,7 @@ class ClientManagementTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->owner)
-            ->get(route('clients.index', [
+            ->get(route('clients.filter.state', [
                 'state' => 'Gujarat'
             ]));
 
@@ -312,7 +362,7 @@ class ClientManagementTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->owner)
-            ->get(route('clients.index', [
+            ->get(route('clients.filter.status', [
                 'status' => 'active'
             ]));
 

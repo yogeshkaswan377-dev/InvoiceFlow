@@ -4,27 +4,26 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class EnsureCompanySelected
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
-        
-        if (!$user) {
-            return $next($request);
+        if (
+            !session()->has('current_company_id') &&
+            auth()->check() &&
+            auth()->user()->company_id
+        ) {
+            session([
+                'current_company_id' => auth()->user()->company_id
+            ]);
         }
-        
-        // If user has no current company and has at least one company
-        if (!$user->current_company_id && $user->company_id) {
-            return redirect()->route('company.switch');
-        }
-        
-        // If user has no company at all, redirect to create
-        if (!$user->current_company_id && !$user->company_id) {
+
+        if (!session()->has('current_company_id')) {
             return redirect()->route('company.create');
         }
-        
+
         return $next($request);
     }
 }

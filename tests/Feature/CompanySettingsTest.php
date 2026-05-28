@@ -53,7 +53,7 @@ class CompanySettingsTest extends TestCase
         $this->staff = User::factory()->create([
             'company_id' => $this->company->id,
         ]);
-        $this->staff->assignRole('staff');
+        $this->staff->assignRole('staff', $this->company->id);
 
         // ✅ Set current company in session
         session(['current_company_id' => $this->company->id]);
@@ -62,6 +62,9 @@ class CompanySettingsTest extends TestCase
     public function test_owner_can_view_settings_page(): void
     {
         $response = $this->actingAs($this->owner)
+            ->withSession([
+                'current_company_id' => $this->company->id
+            ])
             ->get(route('settings.index'));
 
         $response->assertOk();
@@ -70,6 +73,9 @@ class CompanySettingsTest extends TestCase
     public function test_owner_can_update_basic_info(): void
     {
         $response = $this->actingAs($this->owner)
+            ->withSession([
+                'current_company_id' => $this->company->id
+            ])
             ->post(route('settings.update'), [
                 'company_name' => 'Updated Company',
                 'email' => 'company@example.com',
@@ -97,6 +103,9 @@ class CompanySettingsTest extends TestCase
         ];
 
         $response = $this->actingAs($this->owner)
+            ->withSession([
+                'current_company_id' => $this->company->id
+            ])
             ->post(route('settings.update'), [
                 'gst_rates' => $gstRates,
             ]);
@@ -118,6 +127,9 @@ class CompanySettingsTest extends TestCase
         $file = UploadedFile::fake()->image('logo.png');
 
         $response = $this->actingAs($this->owner)
+            ->withSession([
+                'current_company_id' => $this->company->id
+            ])
             ->post(route('settings.upload.logo'), [
                 'logo' => $file,
             ]);
@@ -142,6 +154,9 @@ class CompanySettingsTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->owner)
+            ->withSession([
+                'current_company_id' => $this->company->id
+            ])
             ->delete(route('settings.logo.remove'));
 
         $response->assertRedirect();
@@ -160,6 +175,9 @@ class CompanySettingsTest extends TestCase
         $file = UploadedFile::fake()->image('signature.png');
 
         $response = $this->actingAs($this->owner)
+            ->withSession([
+                'current_company_id' => $this->company->id
+            ])
             ->post(route('settings.upload.signature'), [
                 'signature' => $file,
             ]);
@@ -186,6 +204,9 @@ class CompanySettingsTest extends TestCase
         ];
 
         $response = $this->actingAs($this->owner)
+            ->withSession([
+                'current_company_id' => $this->company->id
+            ])
             ->post(route('settings.update'), [
                 'bank_details' => $bankDetails,
             ]);
@@ -213,6 +234,9 @@ class CompanySettingsTest extends TestCase
     public function test_gst_rates_validation_fails_for_invalid_distribution(): void
     {
         $response = $this->actingAs($this->owner)
+            ->withSession([
+                'current_company_id' => $this->company->id
+            ])
             ->post(route('settings.update'), [
                 'gst_rates' => [
                     [
@@ -230,6 +254,9 @@ class CompanySettingsTest extends TestCase
     public function test_bank_details_validation_fails_for_invalid_ifsc(): void
     {
         $response = $this->actingAs($this->owner)
+            ->withSession([
+                'current_company_id' => $this->company->id
+            ])
             ->post(route('settings.update'), [
                 'bank_details' => [
                     [
