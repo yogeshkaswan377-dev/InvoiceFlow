@@ -66,8 +66,7 @@ class ClientController extends Controller
 
         // Calculate place of supply
         $companyState = Auth::user()->company->state_code;
-        $validated['place_of_supply'] =
-            ($validated['state_code'] === $companyState)
+        $validated['place_of_supply'] = ($validated['state_code'] === $companyState)
             ? 'intra_state'
             : 'inter_state';
 
@@ -83,6 +82,11 @@ class ClientController extends Controller
 
     public function update(Request $request, Client $client)
     {
+        \Log::info('=== UPDATE METHOD CALLED ===');
+        \Log::info('Client ID: ' . $client->id);
+        \Log::info('Current name: ' . $client->name);
+        \Log::info('Request data: ', $request->all());
+
         $this->authorize('update', $client);
 
         $validated = $request->validate([
@@ -122,17 +126,22 @@ class ClientController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
+        \Log::info('Validated data: ', $validated);
+
         // Recalculate place of supply
         $companyState = Auth::user()->company->state_code;
-        $validated['place_of_supply'] =
-            ($validated['state_code'] === $companyState)
+        $validated['place_of_supply'] = ($validated['state_code'] === $companyState)
             ? 'intra_state'
             : 'inter_state';
 
         $validated['state'] = $validated['state_name'];
-        $validated['status'] = $validated['is_active'] ? 'active' : 'inactive';
+        $validated['status'] = isset($validated['is_active']) && $validated['is_active'] ? 'active' : 'inactive';
 
+        \Log::info('BEFORE UPDATE - Client name: ' . $client->name);
+        \Log::info('Validated name: ' . $validated['name']);
         $client->update($validated);
+        \Log::info('After update - DB name: ' . $client->fresh()->name);
+        \Log::info('=== UPDATE END ===');
 
         return redirect()->route('clients.index')->with('success', 'Client updated successfully.');
     }

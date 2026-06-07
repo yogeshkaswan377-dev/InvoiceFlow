@@ -39,4 +39,18 @@ class Client extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($client) {
+            if (is_null($client->place_of_supply) && $client->company_id && $client->state_code) {
+                $company = Company::find($client->company_id);
+                if ($company && $company->state_code) {
+                    $client->place_of_supply = ($client->state_code === $company->state_code)
+                        ? 'intra_state'
+                        : 'inter_state';
+                }
+            }
+        });
+    }
 }

@@ -27,40 +27,40 @@ class ClientFactory extends Factory
             'city' => $this->faker->city(),
             'pincode' => $this->faker->regexify('[1-9][0-9]{5}'),
             'country' => 'India',
-            'place_of_supply' => 'Intra-State Supply',
+            'place_of_supply' => 'intra_state',
             'credit_limit' => 0,
             'is_active' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ];
     }
-    
+
     public function business(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'client_type' => 'business',
             'company_name' => $this->faker->company(),
         ]);
     }
-    
+
     public function individual(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'client_type' => 'individual',
             'gstin' => null,
         ]);
     }
-    
+
     public function active(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'is_active' => true,
         ]);
     }
-    
+
     public function inactive(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'is_active' => false,
         ]);
     }

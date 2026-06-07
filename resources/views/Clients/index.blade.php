@@ -65,13 +65,13 @@
                             <tr class="border-b hover:bg-gray-50">
                                 <td class="py-3 px-4">
                                     <div>
-                                        <div class="font-medium">{{ $client->display_name }}</div>
+                                        <div class="font-medium">{{ $client->name }}</div>
                                         @if($client->email)
                                             <div class="text-sm text-gray-500">{{ $client->email }}</div>
                                         @endif
                                     </div>
                                 </td>
-                                <td class="py-3 px-4">{{ $client->formatted_gstin ?? '-' }}</td>
+                                <td class="py-3 px-4">{{ $client->gstin ?? '-' }}</td>
                                 <td class="py-3 px-4">{{ $client->state_name ?? '-' }}</td>
                                 <td class="py-3 px-4">{{ $client->place_of_supply ?? '-' }}</td>
                                 <td class="py-3 px-4">
