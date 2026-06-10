@@ -82,11 +82,6 @@ class ClientController extends Controller
 
     public function update(Request $request, Client $client)
     {
-        \Log::info('=== UPDATE METHOD CALLED ===');
-        \Log::info('Client ID: ' . $client->id);
-        \Log::info('Current name: ' . $client->name);
-        \Log::info('Request data: ', $request->all());
-
         $this->authorize('update', $client);
 
         $validated = $request->validate([
@@ -106,7 +101,7 @@ class ClientController extends Controller
                 'string',
                 'size:15',
                 'regex:/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/',
-                'unique:clients,gstin',
+                'unique:clients,gstin,' . $client->id,
             ],
 
             'state_code' => 'required|string|size:2',
@@ -126,8 +121,6 @@ class ClientController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        \Log::info('Validated data: ', $validated);
-
         // Recalculate place of supply
         $companyState = Auth::user()->company->state_code;
         $validated['place_of_supply'] = ($validated['state_code'] === $companyState)
@@ -137,12 +130,8 @@ class ClientController extends Controller
         $validated['state'] = $validated['state_name'];
         $validated['status'] = isset($validated['is_active']) && $validated['is_active'] ? 'active' : 'inactive';
 
-        \Log::info('BEFORE UPDATE - Client name: ' . $client->name);
-        \Log::info('Validated name: ' . $validated['name']);
-        $client->update($validated);
-        \Log::info('After update - DB name: ' . $client->fresh()->name);
-        \Log::info('=== UPDATE END ===');
 
+        $client->update($validated);
         return redirect()->route('clients.index')->with('success', 'Client updated successfully.');
     }
 

@@ -17,9 +17,7 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
-        if (auth()->user()->role !== 'owner') {
-            abort(403);
-        }
+        abort_unless(auth()->user()->hasRole('owner'), 403);
 
         $validated = $request->validate([
             'company_name' => 'nullable|string|max:255',
@@ -109,9 +107,7 @@ class SettingController extends Controller
 
     public function uploadLogo(Request $request)
     {
-        if (auth()->user()->role !== 'owner') {
-            abort(403);
-        }
+        abort_unless(auth()->user()->hasRole('owner'), 403);
 
         $request->validate([
             'logo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
@@ -143,9 +139,7 @@ class SettingController extends Controller
 
     public function uploadSignature(Request $request)
     {
-        if (auth()->user()->role !== 'owner') {
-            abort(403);
-        }
+        abort_unless(auth()->user()->hasRole('owner'), 403);
 
         $request->validate([
             'signature' => 'required|image|mimes:jpeg,png,jpg,gif|max:1024'
