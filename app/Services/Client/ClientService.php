@@ -34,7 +34,7 @@ class ClientService
         return $client;
     }
     
-    public function createClient(ClientData $clientData)
+    public function createClient(ClientData $clientData)    
     {
         return DB::transaction(function () use ($clientData) {
             // Validate GSTIN if provided
