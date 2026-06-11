@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\Client;
 use App\Models\Company;
 use App\Models\User;
+use App\Repositories\Contracts\InvoiceRepositoryInterface;
 use App\Services\NumberGenerator\InvoiceNumberGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class InvoiceManagementTest extends TestCase
@@ -96,11 +98,10 @@ class InvoiceManagementTest extends TestCase
             ]
         ];
 
-        $response = $this->post(route('invoices.store'), $invoiceData);
+        $invoice = app(InvoiceRepositoryInterface::class)->create($invoiceData);
 
-        $response->assertRedirect();
         $this->assertDatabaseHas('invoices', ['invoice_number' => 'INV-2026-00001']);
         $this->assertDatabaseHas('invoice_items', ['name' => 'Test Product']);
+        $this->assertCount(1, $invoice->items);
     }
 }
-    

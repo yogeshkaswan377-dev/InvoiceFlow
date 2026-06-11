@@ -1,0 +1,206 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\DTOs\InvoiceData;
+use App\DTOs\InvoiceItemData;
+use App\Http\Requests\StoreProformaRequest;
+use App\Http\Requests\UpdateProformaRequest;
+use App\Models\Client;
+use App\Models\Company;
+use App\Services\Invoice\InvoiceService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class ProformaController extends Controller
+{
+    public function __construct(
+        private InvoiceService $invoiceService
+    ) {}
+
+    /**
+     * Display listing of proforma invoices
+     */
+    public function index(Request $request)
+    {
+        $companyId = Auth::user()->current_company_id;
+
+        $filters = $request->only(['status', 'date_from', 'date_to', 'search', 'client_id']);
+        $invoices = $this->invoiceService->listProformas($companyId, $filters);
+
+        return view('proformas.index', compact('invoices', 'filters'));
+    }
+
+    /**
+     * Show create form
+     */
+    public function create()
+    {
+        $company = Company::find(Auth::user()->current_company_id);
+        $clients = Client::where('company_id', $company->id)
+            ->where('status', 'active')
+            ->get();
+
+        return view('proformas.create', compact('company', 'clients'));
+    }
+
+    /**
+     * Store new proforma
+     */
+    public function store(StoreProformaRequest $request)
+    {
+        $companyId = Auth::user()->current_company_id;
+
+        $items = collect($request->items)->map(function ($item) {
+            return new InvoiceItemData(
+                name: $item['name'],
+                quantity: (int) $item['quantity'],
+                unit_price: (float) $item['unit_price'],
+                description: $item['description'] ?? null,
+                gst_rate: (float) ($item['gst_rate'] ?? 18.00),
+                discount_type: $item['discount_type'] ?? null,
+                discount_value: (float) ($item['discount_value'] ?? 0),
+                taxable_amount: (float) ($item['unit_price'] * $item['quantity']),
+            );
+        })->toArray();
+
+        $invoiceData = new InvoiceData(
+            company_id: $companyId,
+            client_id: (int) $request->client_id,
+            created_by: Auth::id(),
+            invoice_type: 'proforma',
+            gst_mode: 'exclusive',
+            gst_rate: 18.00,
+            invoice_date: $request->invoice_date,
+            due_date: $request->due_date,
+            reference_number: $request->reference_number,
+            discount_type: $request->discount_type,
+            discount_amount: (float) ($request->discount_amount ?? 0),
+            shipping_charges: (float) ($request->shipping_charges ?? 0),
+            commission: (float) ($request->commission ?? 0),
+            notes: $request->notes,
+            terms_and_conditions: $request->terms_and_conditions,
+            payment_terms: $request->payment_terms ?? 'Net 15',
+            logistics_details: $request->logistics_details,
+            estimated_delivery_date: $request->estimated_delivery_date,
+            items: $items,
+            status: $request->status ?? 'draft',
+        );
+
+        $invoice = $this->invoiceService->createProforma($invoiceData);
+
+        return redirect()
+            ->route('proformas.show', $invoice->id)
+            ->with('success', 'Proforma invoice #' . $invoice->invoice_number . ' created successfully!');
+    }
+
+    /**
+     * Show proforma invoice
+     */
+    public function show(int $id)
+    {
+        $companyId = Auth::user()->current_company_id;
+        $invoice = $this->invoiceService->getInvoice($id, $companyId);
+
+        if (!$invoice || $invoice->invoice_type !== 'proforma') {
+            abort(404);
+        }
+
+        return view('proformas.show', compact('invoice'));
+    }
+
+    /**
+     * Edit proforma
+     */
+    public function edit(int $id)
+    {
+        $companyId = Auth::user()->current_company_id;
+        $invoice = $this->invoiceService->getInvoice($id, $companyId);
+
+        if (!$invoice || !$invoice->isEditable()) {
+            abort(404);
+        }
+
+        $company = Company::find($companyId);
+        $clients = Client::where('company_id', $companyId)
+            ->where('status', 'active')
+            ->get();
+
+        return view('proformas.edit', compact('invoice', 'company', 'clients'));
+    }
+
+    /**
+     * Update proforma
+     */
+    public function update(UpdateProformaRequest $request, int $id)
+    {
+        $companyId = Auth::user()->current_company_id;
+
+        $items = collect($request->items)->map(function ($item) {
+            return new InvoiceItemData(
+                name: $item['name'],
+                quantity: (int) $item['quantity'],
+                unit_price: (float) $item['unit_price'],
+                description: $item['description'] ?? null,
+                gst_rate: (float) ($item['gst_rate'] ?? 18.00),
+                discount_type: $item['discount_type'] ?? null,
+                discount_value: (float) ($item['discount_value'] ?? 0),
+                taxable_amount: (float) ($item['unit_price'] * $item['quantity']),
+            );
+        })->toArray();
+
+        $invoiceData = new InvoiceData(
+            company_id: $companyId,
+            client_id: (int) $request->client_id,
+            created_by: Auth::id(),
+            invoice_type: 'proforma',
+            gst_mode: 'exclusive',
+            gst_rate: 18.00,
+            invoice_date: $request->invoice_date,
+            due_date: $request->due_date,
+            reference_number: $request->reference_number,
+            discount_type: $request->discount_type,
+            discount_amount: (float) ($request->discount_amount ?? 0),
+            shipping_charges: (float) ($request->shipping_charges ?? 0),
+            commission: (float) ($request->commission ?? 0),
+            notes: $request->notes,
+            terms_and_conditions: $request->terms_and_conditions,
+            payment_terms: $request->payment_terms ?? 'Net 15',
+            logistics_details: $request->logistics_details,
+            estimated_delivery_date: $request->estimated_delivery_date,
+            items: $items,
+            updated_by: Auth::id(),
+        );
+
+        $this->invoiceService->updateProforma($id, $invoiceData);
+
+        return redirect()
+            ->route('proformas.show', $id)
+            ->with('success', 'Proforma invoice updated successfully!');
+    }
+
+    /**
+     * Delete proforma
+     */
+    public function destroy(int $id)
+    {
+        $companyId = Auth::user()->current_company_id;
+        $invoice = $this->invoiceService->getInvoice($id, $companyId);
+
+        if (!$invoice || !$invoice->isDeletable()) {
+            return back()->with('error', 'Cannot delete this invoice.');
+        }
+
+        $this->invoiceService->deleteProforma($id);
+
+        return redirect()
+            ->route('proformas.index')
+            ->with('success', 'Proforma invoice deleted.');
+    }
+
+    public function convertToGst(int $id)
+    {
+        return redirect()->route('proformas.show', $id)
+            ->with('info', 'GST Invoice feature coming in Phase 4B.');
+    }
+}

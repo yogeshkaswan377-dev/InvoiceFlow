@@ -46,7 +46,7 @@ return new class extends Migration
 
             // Financial Fields
             $table->decimal('subtotal', 15, 2)->default(0);
-            $table->decimal('discount_type', 10, 2)->nullable(); // percentage or fixed
+            $table->enum('discount_type', ['percentage', 'fixed'])->nullable();
             $table->decimal('discount_amount', 15, 2)->default(0);
             $table->decimal('taxable_amount', 15, 2)->default(0);
             $table->decimal('cgst_amount', 15, 2)->default(0);

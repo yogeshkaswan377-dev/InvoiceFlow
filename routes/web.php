@@ -5,6 +5,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ProformaController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -99,6 +100,43 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::delete('/{client}', [ClientController::class, 'destroy'])
                 ->name('clients.destroy');
+        });
+
+    // ============================================
+    // PHASE 4A: PROFORMA INVOICES
+    // ============================================
+    Route::prefix('proformas')
+        ->middleware(['company.selected'])
+        ->name('proformas.')
+        ->group(function () {
+
+            Route::get('/', [ProformaController::class, 'index'])
+                ->name('index');
+
+            Route::get('/create', [ProformaController::class, 'create'])
+                ->name('create');
+
+            Route::post('/', [ProformaController::class, 'store'])
+                ->name('store');
+
+            Route::get('/{id}', [ProformaController::class, 'show'])
+                ->name('show')
+                ->where('id', '[0-9]+');
+
+            Route::get('/{id}/edit', [ProformaController::class, 'edit'])
+                ->name('edit')
+                ->where('id', '[0-9]+');
+
+            Route::put('/{id}', [ProformaController::class, 'update'])
+                ->name('update')
+                ->where('id', '[0-9]+');
+
+            Route::delete('/{id}', [ProformaController::class, 'destroy'])
+                ->name('destroy')
+                ->where('id', '[0-9]+');
+
+            Route::post('/proformas/{id}/convert-to-gst', [ProformaController::class, 'convertToGst'])
+                ->name('proformas.convert-to-gst');
         });
 
     // Profile

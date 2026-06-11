@@ -36,6 +36,7 @@ class InvoiceData
         public readonly bool $show_hsn_sac = true,
         public readonly array $items = [],
         public readonly ?int $updated_by = null,
+        public readonly ?string $status = null,
     ) {}
 
     public function toArray(): array
@@ -72,7 +73,7 @@ class InvoiceData
             'show_hsn_sac' => $this->show_hsn_sac,
             'items' => $this->items,
             'updated_by' => $this->updated_by,
+            'status' => $this->status,
         ];
     }
 }
-    
