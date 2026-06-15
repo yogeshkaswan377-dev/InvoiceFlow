@@ -11,6 +11,9 @@ use App\Models\Company;
 use App\Services\Invoice\InvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Mail\InvoiceMail;
+use Illuminate\Support\Facades\Mail;
 
 class ProformaController extends Controller
 {
@@ -202,5 +205,39 @@ class ProformaController extends Controller
     {
         return redirect()->route('proformas.show', $id)
             ->with('info', 'GST Invoice feature coming in Phase 4B.');
+    }
+
+    public function pdf(int $id)
+    {
+        $companyId = Auth::user()->current_company_id;
+        $invoice = $this->invoiceService->getInvoice($id, $companyId);
+
+        if (!$invoice) abort(404);
+
+        $pdf = Pdf::loadView('proformas.pdf', compact('invoice'));
+        return $pdf->download('Proforma-' . $invoice->invoice_number . '.pdf');
+    }
+
+    public function stream(int $id)
+    {
+        $companyId = Auth::user()->current_company_id;
+        $invoice = $this->invoiceService->getInvoice($id, $companyId);
+        if (!$invoice) abort(404);
+        $pdf = Pdf::loadView('proformas.pdf', compact('invoice'));
+        return $pdf->stream('Proforma-' . $invoice->invoice_number . '.pdf');
+    }
+
+    public function sendEmail(int $id)
+    {
+        $companyId = Auth::user()->current_company_id;
+        $invoice = $this->invoiceService->getInvoice($id, $companyId);
+
+        if (!$invoice || !$invoice->client->email) {
+            return back()->with('error', 'Client email not found.');
+        }
+
+        Mail::to($invoice->client->email)->send(new InvoiceMail($invoice));
+
+        return back()->with('success', 'Invoice emailed successfully!');
     }
 }

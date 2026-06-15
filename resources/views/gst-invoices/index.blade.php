@@ -1,4 +1,3 @@
-@"
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
@@ -39,7 +38,7 @@
                                             {{ $invoice->invoice_number }}
                                         </a>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-500">{{ $invoice->client->name ?? 'N/A' }}</td>
+                                    {{ optional($invoice->client)->name ?? 'N/A' }}
                                     <td class="px-4 py-3 text-sm text-gray-500">{{ $invoice->invoice_date->format('d M Y') }}</td>
                                     <td class="px-4 py-3 text-sm text-right font-medium">₹{{ number_format($invoice->grand_total, 2) }}</td>
                                     <td class="px-4 py-3 text-sm text-center">
@@ -87,4 +86,3 @@
         </div>
     </div>
 </x-app-layout>
-"@ | Set-Content resources\views\gst-invoices\index.blade.php

@@ -197,6 +197,7 @@ class GSTInvoiceService
     {
         $filters['type'] = 'gst_invoice';
         return $this->invoiceRepository->getByCompany($companyId, $filters);
+        
     }
 
     /**

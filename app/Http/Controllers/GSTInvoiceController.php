@@ -11,6 +11,10 @@ use App\Models\Company;
 use App\Services\Invoice\GSTInvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+use ZipArchive;
+use App\Mail\InvoiceMail;
+use Illuminate\Support\Facades\Mail;
 
 class GSTInvoiceController extends Controller
 {
@@ -163,5 +167,62 @@ class GSTInvoiceController extends Controller
 
         return redirect()->route('gst-invoices.index')
             ->with('success', 'GST Invoice deleted.');
+    }
+
+    public function pdf(int $id)
+    {
+        $companyId = Auth::user()->current_company_id;
+        $invoice = $this->gstInvoiceService->getInvoice($id, $companyId);
+
+        if (!$invoice) abort(404);
+
+        $pdf = Pdf::loadView('gst-invoices.pdf', compact('invoice'));
+        return $pdf->download('GST-Invoice-' . $invoice->invoice_number . '.pdf');
+    }
+
+    public function stream(int $id)
+    {
+        $companyId = Auth::user()->current_company_id;
+        $invoice = $this->gstInvoiceService->getInvoice($id, $companyId);
+        if (!$invoice) abort(404);
+        $pdf = Pdf::loadView('gst-invoices.pdf', compact('invoice'));
+        return $pdf->stream('GST-Invoice-' . $invoice->invoice_number . '.pdf');
+    }
+
+    public function bulkPdf(Request $request)
+    {
+        $ids = explode(',', $request->ids);
+        $companyId = Auth::user()->current_company_id;
+
+        $zip = new ZipArchive();
+        $zipName = 'invoices-' . now()->format('Ymd') . '.zip';
+        $zipPath = storage_path('app/' . $zipName);
+
+        if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
+            foreach ($ids as $id) {
+                $invoice = $this->gstInvoiceService->getInvoice(trim($id), $companyId);
+                if ($invoice) {
+                    $pdf = Pdf::loadView('gst-invoices.pdf', compact('invoice'));
+                    $zip->addFromString($invoice->invoice_number . '.pdf', $pdf->output());
+                }
+            }
+            $zip->close();
+        }
+
+        return response()->download($zipPath)->deleteFileAfterSend();
+    }
+
+    public function sendEmail(int $id)
+    {
+        $companyId = Auth::user()->current_company_id;
+        $invoice = $this->invoiceService->getInvoice($id, $companyId);
+
+        if (!$invoice || !$invoice->client->email) {
+            return back()->with('error', 'Client email not found.');
+        }
+
+        Mail::to($invoice->client->email)->send(new InvoiceMail($invoice));
+
+        return back()->with('success', 'Invoice emailed successfully!');
     }
 }

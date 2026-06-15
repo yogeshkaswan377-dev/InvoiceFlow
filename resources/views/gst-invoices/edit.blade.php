@@ -1,4 +1,3 @@
-@"
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
@@ -94,6 +93,25 @@
                     </div>
                 </div>
 
+                <!-- Product Search -->
+                <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Products</label>
+                    <div class="flex gap-2">
+                        <input type="text" x-model="productSearch" x-on:input.debounce.300="searchProducts()"
+                            placeholder="Search by name or HSN..."
+                            class="flex-1 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 text-sm">
+                    </div>
+                    <div x-show="searchResults.length > 0" class="mt-2 bg-white dark:bg-gray-800 border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                        <template x-for="product in searchResults" :key="product.id">
+                            <div x-on:click="selectProduct(product)"
+                                class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm border-b last:border-0">
+                                <span x-text="product.name" class="font-medium"></span>
+                                <span class="text-gray-500 ml-2">₹<span x-text="product.unit_price"></span> | <span x-text="product.gst_rate"></span>% GST</span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
                 <!-- Items Section -->
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                     <div class="p-6">
@@ -148,6 +166,7 @@
                                             </td>
                                             <td class="px-3 py-2 text-right text-sm font-medium" x-text="formatCurrency(item.line_total)"></td>
                                             <td class="px-3 py-2 text-center">
+                                                <button type="button" x-on:click="cloneItem(index)" class="text-blue-600 hover:text-blue-900 text-sm mr-1" title="Clone">📋</button>
                                                 <button type="button" x-on:click="removeItem(index)" class="text-red-600 hover:text-red-900 text-sm">&times;</button>
                                             </td>
                                         </tr>
@@ -249,10 +268,10 @@
                     !!json_encode($invoice - > items - > map(fn($i) => [
                         'name' => $i - > name,
                         'hsn_sac_code' => $i - > hsn_sac_code ?? '',
-                        'quantity' => (int)\ $i - > quantity,
-                        'unit_price' => (float)\ $i - > unit_price,
-                        'gst_rate' => (float)\ $i - > gst_rate,
-                        'line_total' => (float)\ $i - > line_total,
+                        'quantity' => (int) $i - > quantity,
+                        'unit_price' => (float) $i - > unit_price,
+                        'gst_rate' => (float) $i - > gst_rate,
+                        'line_total' => (float) $i - > line_total,
                     ]) - > toArray()) !!
                 },
                 gstMode: '{!! $invoice->gst_mode !!}',
@@ -266,6 +285,8 @@
                 commission: {
                     !!$invoice - > commission ?? 0!!
                 },
+                productSearch: '',
+                searchResults: [],
                 subtotal: {
                     !!$invoice - > subtotal!!
                 },
@@ -287,9 +308,7 @@
                 grandTotal: {
                     !!$invoice - > grand_total!!
                 },
-                taxType: '{!! $invoice->igst_amount > 0 ? '
-                igst ' : '
-                cgst_sgst ' !!}',
+                taxType: '{!! $invoice->igst_amount > 0 ? "igst" : "cgst_sgst" !!}',
                 companyState: '{!! $invoice->company->state_code !!}',
                 clientState: '{!! $invoice->client->state_code !!}',
 
@@ -298,8 +317,8 @@
                 },
 
                 fetchClientState() {
-                    const select = document.querySelector('select[name=client_id]');
-                    const option = select.options[select.selectedIndex];
+                    var select = document.querySelector('select[name=client_id]');
+                    var option = select.options[select.selectedIndex];
                     this.clientState = option.dataset.state || '24';
                     this.determineTaxType();
                     this.calculateTotals();
@@ -335,16 +354,11 @@
 
                 calculateTotals() {
                     this.subtotal = this.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-
                     var d = parseFloat(this.discountAmount) || 0;
                     if (this.discountType === 'percentage' && d > 0) d = this.subtotal * (d / 100);
                     this.taxableAmount = this.subtotal - (this.discountType === 'fixed' ? d : 0);
-
-                    var rate = this.items.length > 0 ?
-                        this.items.reduce((sum, item) => sum + parseFloat(item.gst_rate), 0) / this.items.length :
-                        18;
+                    var rate = this.items.length > 0 ? this.items.reduce((sum, item) => sum + parseFloat(item.gst_rate), 0) / this.items.length : 18;
                     this.totalGst = this.taxableAmount * (rate / 100);
-
                     if (this.taxType === 'cgst_sgst') {
                         this.cgstAmount = this.totalGst / 2;
                         this.sgstAmount = this.totalGst / 2;
@@ -354,16 +368,52 @@
                         this.cgstAmount = 0;
                         this.sgstAmount = 0;
                     }
-
-                    this.grandTotal = this.taxableAmount + this.totalGst +
-                        (parseFloat(this.shippingCharges) || 0) + (parseFloat(this.commission) || 0);
+                    this.grandTotal = this.taxableAmount + this.totalGst + (parseFloat(this.shippingCharges) || 0) + (parseFloat(this.commission) || 0);
                 },
 
                 formatCurrency(amount) {
                     return '₹' + parseFloat(amount || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                },
+
+                searchProducts() {
+                    if (this.productSearch.length < 2) {
+                        this.searchResults = [];
+                        return;
+                    }
+                    fetch('/products/search?q=' + encodeURIComponent(this.productSearch))
+                        .then(res => res.json())
+                        .then(data => {
+                            this.searchResults = data;
+                        });
+                },
+
+                selectProduct(product) {
+                    this.items.push({
+                        name: product.name,
+                        hsn_sac_code: product.hsn_sac_code || '',
+                        quantity: 1,
+                        unit_price: parseFloat(product.unit_price),
+                        gst_rate: parseFloat(product.gst_rate),
+                        line_total: parseFloat(product.unit_price)
+                    });
+                    this.productSearch = '';
+                    this.searchResults = [];
+                    this.calculateTotals();
+                },
+
+                cloneItem(index) {
+                    var orig = this.items[index];
+                    this.items.push({
+                        name: orig.name + ' (copy)',
+                        hsn_sac_code: orig.hsn_sac_code,
+                        quantity: orig.quantity,
+                        unit_price: orig.unit_price,
+                        gst_rate: orig.gst_rate,
+                        line_total: orig.line_total
+                    });
+                    this.calculateTotals();
                 }
             }
         }
     </script>
 </x-app-layout>
-"@ | Set-Content resources\views\gst-invoices\edit.blade.php

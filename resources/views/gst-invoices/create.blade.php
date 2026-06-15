@@ -1,4 +1,3 @@
-@"
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
@@ -45,6 +44,26 @@
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Due Date *</label>
                                         <input type="date" name="due_date" required value="{{ old('due_date', date('Y-m-d', strtotime('+15 days'))) }}"
                                             class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                    </div>
+                                </div>
+
+                                <!-- Product Search -->
+                                <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Products</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" x-model="productSearch" x-on:input.debounce.300="searchProducts()"
+                                            placeholder="Search by name or HSN..."
+                                            class="flex-1 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 text-sm">
+                                    </div>
+                                    <!-- Search Results Dropdown -->
+                                    <div x-show="searchResults.length > 0" class="mt-2 bg-white dark:bg-gray-800 border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                                        <template x-for="product in searchResults" :key="product.id">
+                                            <div x-on:click="selectProduct(product)"
+                                                class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm border-b last:border-0">
+                                                <span x-text="product.name" class="font-medium"></span>
+                                                <span class="text-gray-500 ml-2">₹<span x-text="product.unit_price"></span> | <span x-text="product.gst_rate"></span>% GST</span>
+                                            </div>
+                                        </template>
                                     </div>
                                 </div>
 
@@ -138,6 +157,7 @@
                                             </td>
                                             <td class="px-3 py-2 text-right text-sm font-medium" x-text="formatCurrency(item.line_total)"></td>
                                             <td class="px-3 py-2 text-center">
+                                                <button type="button" x-on:click="cloneItem(index)" class="text-blue-600 hover:text-blue-900 text-sm mr-1" title="Clone">📋</button>
                                                 <button type="button" x-on:click="removeItem(index)" class="text-red-600 hover:text-red-900 text-sm">&times;</button>
                                             </td>
                                         </tr>
@@ -241,6 +261,8 @@
                 discountAmount: 0,
                 shippingCharges: 0,
                 commission: 0,
+                productSearch: '',
+                searchResults: [],
                 subtotal: 0,
                 taxableAmount: 0,
                 cgstAmount: 0,
@@ -333,9 +355,47 @@
 
                 formatCurrency(amount) {
                     return '₹' + parseFloat(amount || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                }
+                },
+
+                searchProducts() {
+                    if (this.productSearch.length < 2) {
+                        this.searchResults = [];
+                        return;
+                    }
+                    fetch('/products/search?q=' + encodeURIComponent(this.productSearch))
+                        .then(res => res.json())
+                        .then(data => {
+                            this.searchResults = data;
+                        });
+                },
+
+                selectProduct(product) {
+                    this.items.push({
+                        name: product.name,
+                        hsn_sac_code: product.hsn_sac_code || '',
+                        quantity: 1,
+                        unit_price: parseFloat(product.unit_price),
+                        gst_rate: parseFloat(product.gst_rate),
+                        line_total: parseFloat(product.unit_price)
+                    });
+                    this.productSearch = '';
+                    this.searchResults = [];
+                    this.calculateTotals();
+                },
+
+                cloneItem(index) {
+                    const original = this.items[index];
+                    this.items.push({
+                        name: original.name + ' (copy)',
+                        hsn_sac_code: original.hsn_sac_code,
+                        quantity: original.quantity,
+                        unit_price: original.unit_price,
+                        gst_rate: original.gst_rate,
+                        line_total: original.line_total
+                    });
+                    this.calculateTotals();
+                },
             }
         }
     </script>
 </x-app-layout>
-"@ | Set-Content resources\views\gst-invoices\create.blade.php

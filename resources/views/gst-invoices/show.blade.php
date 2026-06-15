@@ -1,4 +1,3 @@
-@"
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
@@ -18,6 +17,7 @@
                 <button onclick="window.print()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm">
                     Print
                 </button>
+
                 @if($invoice->status === 'draft')
                 <form action="{{ route('gst-invoices.destroy', $invoice->id) }}" method="POST"
                     onsubmit="return confirm('Delete this invoice?')">
@@ -257,4 +257,3 @@
         }
     </style>
 </x-app-layout>
-"@ | Set-Content resources\views\gst-invoices\show.blade.php
