@@ -135,6 +135,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('create');
 
             Route::post('/', [ProformaController::class, 'store'])
+                ->middleware('throttle:invoice-create')
                 ->name('store');
 
             Route::get('/{id}', [ProformaController::class, 'show'])
@@ -150,6 +151,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->where('id', '[0-9]+');
 
             Route::delete('/{id}', [ProformaController::class, 'destroy'])
+                ->middleware('throttle:invoice-delete')
                 ->name('destroy')
                 ->where('id', '[0-9]+');
 
@@ -181,6 +183,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('create');
 
             Route::post('/', [GSTInvoiceController::class, 'store'])
+                ->middleware('throttle:invoice-create')
                 ->name('store');
 
             Route::get('/{id}', [GSTInvoiceController::class, 'show'])
@@ -196,6 +199,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->where('id', '[0-9]+');
 
             Route::delete('/{id}', [GSTInvoiceController::class, 'destroy'])
+                ->middleware('throttle:invoice-delete')
                 ->name('destroy')
                 ->where('id', '[0-9]+');
 

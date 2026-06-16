@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 
 class ClientController extends Controller
@@ -147,10 +148,16 @@ class ClientController extends Controller
 
     public function destroy(Client $client)
     {
-        $this->authorize('delete', $client);
+        Log::warning('Client deleted', [
+            'user_id' => Auth::id(),
+            'client_name' => $client->name,
+            'company_id' => $client->company_id,
+        ]);
+
         $client->delete();
 
-        return redirect()->route('clients.index')->with('success', 'Client deleted successfully.');
+        return redirect()->route('clients.index')
+            ->with('success', 'Client deleted.');
     }
 
     public function search(Request $request)

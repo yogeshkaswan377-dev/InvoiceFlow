@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
-use App\Models\Company;
 use App\Models\Invoice;
-use Illuminate\Http\Request;
+use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -16,15 +15,31 @@ class DashboardController extends Controller
 
         // Stats
         $totalInvoices = Invoice::where('company_id', $companyId)->count();
+
         $totalClients = Client::where('company_id', $companyId)->count();
+
+        $totalProducts = Product::where('company_id', $companyId)->count();
+
         $totalRevenue = Invoice::where('company_id', $companyId)
             ->where('status', 'paid')
             ->sum('grand_total');
+
         $pendingAmount = Invoice::where('company_id', $companyId)
-            ->whereIn('status', ['sent', 'viewed', 'accepted', 'partially_paid', 'overdue'])
+            ->whereIn('status', [
+                'sent',
+                'viewed',
+                'accepted',
+                'partially_paid',
+                'overdue'
+            ])
             ->sum('balance_due');
+
         $overdueCount = Invoice::where('company_id', $companyId)
             ->where('status', 'overdue')
+            ->count();
+
+        $draftCount = Invoice::where('company_id', $companyId)
+            ->where('status', 'draft')
             ->count();
 
         // Recent Invoices
@@ -34,41 +49,69 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        // Monthly Revenue (last 6 months)
+        // Recent Clients
+        $recentClients = Client::where('company_id', $companyId)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Monthly Revenue (Last 6 Months)
         $monthlyRevenue = [];
+
         for ($i = 5; $i >= 0; $i--) {
             $month = now()->subMonths($i);
+
             $revenue = Invoice::where('company_id', $companyId)
                 ->whereYear('invoice_date', $month->year)
                 ->whereMonth('invoice_date', $month->month)
                 ->sum('grand_total');
+
             $monthlyRevenue[] = [
                 'month' => $month->format('M Y'),
                 'revenue' => (float) $revenue,
             ];
         }
 
-        // Invoice by Status
+        // Invoice Status Counts
         $statusCounts = [
-            'draft' => Invoice::where('company_id', $companyId)->where('status', 'draft')->count(),
-            'sent' => Invoice::where('company_id', $companyId)->where('status', 'sent')->count(),
-            'paid' => Invoice::where('company_id', $companyId)->where('status', 'paid')->count(),
-            'overdue' => Invoice::where('company_id', $companyId)->where('status', 'overdue')->count(),
+            'draft' => Invoice::where('company_id', $companyId)
+                ->where('status', 'draft')
+                ->count(),
+
+            'sent' => Invoice::where('company_id', $companyId)
+                ->where('status', 'sent')
+                ->count(),
+
+            'paid' => Invoice::where('company_id', $companyId)
+                ->where('status', 'paid')
+                ->count(),
+
+            'overdue' => Invoice::where('company_id', $companyId)
+                ->where('status', 'overdue')
+                ->count(),
         ];
 
-        // Invoice by Type
+        // Invoice Type Counts
         $typeCounts = [
-            'proforma' => Invoice::where('company_id', $companyId)->where('invoice_type', 'proforma')->count(),
-            'gst_invoice' => Invoice::where('company_id', $companyId)->where('invoice_type', 'gst_invoice')->count(),
+            'proforma' => Invoice::where('company_id', $companyId)
+                ->where('invoice_type', 'proforma')
+                ->count(),
+
+            'gst_invoice' => Invoice::where('company_id', $companyId)
+                ->where('invoice_type', 'gst_invoice')
+                ->count(),
         ];
 
         return view('dashboard', compact(
             'totalInvoices',
             'totalClients',
+            'totalProducts',
             'totalRevenue',
             'pendingAmount',
             'overdueCount',
+            'draftCount',
             'recentInvoices',
+            'recentClients',
             'monthlyRevenue',
             'statusCounts',
             'typeCounts'

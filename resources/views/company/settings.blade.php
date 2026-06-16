@@ -53,6 +53,10 @@
                                 <input type="text" name="pincode" value="{{ $company->pincode }}" class="w-full rounded-md border-gray-300">
                             </div>
                         </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-1">Default Invoice Terms & Conditions</label>
+                            <textarea name="invoice_terms" rows="4" class="w-full rounded-md border-gray-300">{{ $company->invoice_terms ?? '' }}</textarea>
+                        </div>
                         <h3 class="text-lg font-semibold mb-4">Logo & Signature</h3>
                         <div class="grid grid-cols-2 gap-4 mb-6">
                             <div>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Gate;
 use App\DTOs\InvoiceData;
 use App\DTOs\InvoiceItemData;
 use App\Http\Requests\StoreProformaRequest;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Mail\InvoiceMail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class ProformaController extends Controller
 {
@@ -109,6 +111,8 @@ class ProformaController extends Controller
             abort(404);
         }
 
+        Gate::authorize('view', $invoice);
+
         return view('proformas.show', compact('invoice'));
     }
 
@@ -128,6 +132,8 @@ class ProformaController extends Controller
         $clients = Client::where('company_id', $companyId)
             ->where('status', 'active')
             ->get();
+
+        Gate::authorize('update', $invoice);
 
         return view('proformas.edit', compact('invoice', 'company', 'clients'));
     }
@@ -194,12 +200,22 @@ class ProformaController extends Controller
             return back()->with('error', 'Cannot delete this invoice.');
         }
 
+        // LOG THE DELETION
+        Log::warning('Invoice deleted', [
+            'user_id' => Auth::id(),
+            'invoice_number' => $invoice->invoice_number,
+            'invoice_type' => $invoice->invoice_type,
+            'company_id' => $companyId,
+        ]);
+
         $this->invoiceService->deleteProforma($id);
 
-        return redirect()
-            ->route('proformas.index')
+        Gate::authorize('delete', $invoice);
+
+        return redirect()->route('proformas.index')
             ->with('success', 'Proforma invoice deleted.');
     }
+
 
     public function convertToGst(int $id)
     {
@@ -237,6 +253,12 @@ class ProformaController extends Controller
         }
 
         Mail::to($invoice->client->email)->send(new InvoiceMail($invoice));
+
+        Log::info('Invoice emailed', [
+            'invoice_number' => $invoice->invoice_number,
+            'sent_to' => $invoice->client->email,
+            'user_id' => Auth::id(),
+        ]); 
 
         return back()->with('success', 'Invoice emailed successfully!');
     }

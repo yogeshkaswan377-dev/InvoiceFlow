@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Gate;
 use App\DTOs\InvoiceData;
 use App\DTOs\InvoiceItemData;
 use App\Http\Requests\StoreProformaRequest;
@@ -15,6 +16,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use ZipArchive;
 use App\Mail\InvoiceMail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class GSTInvoiceController extends Controller
 {
@@ -91,6 +93,8 @@ class GSTInvoiceController extends Controller
             abort(404);
         }
 
+        Gate::authorize('view', $invoice);
+
         return view('gst-invoices.show', compact('invoice'));
     }
 
@@ -105,6 +109,8 @@ class GSTInvoiceController extends Controller
 
         $company = Company::find($companyId);
         $clients = Client::where('company_id', $companyId)->where('status', 'active')->get();
+
+        Gate::authorize('update', $invoice);
 
         return view('gst-invoices.edit', compact('invoice', 'company', 'clients'));
     }
@@ -163,7 +169,15 @@ class GSTInvoiceController extends Controller
             return back()->with('error', 'Cannot delete this invoice.');
         }
 
+        Log::warning('GST Invoice deleted', [
+            'user_id' => Auth::id(),
+            'invoice_number' => $invoice->invoice_number,
+            'company_id' => $companyId,
+        ]);
+
         $this->gstInvoiceService->deleteGSTInvoice($id);
+
+        Gate::authorize('delete', $invoice);
 
         return redirect()->route('gst-invoices.index')
             ->with('success', 'GST Invoice deleted.');

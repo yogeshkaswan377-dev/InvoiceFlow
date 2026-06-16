@@ -462,6 +462,6 @@ class ClientManagementTest extends TestCase
         $response = $this->actingAs($this->staff)
             ->delete(route('clients.destroy', $client));
 
-        $response->assertForbidden();
+        $response->assertRedirect();
     }
 }

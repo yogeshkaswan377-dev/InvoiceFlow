@@ -294,7 +294,11 @@
     @endif
 
     @if($invoice->company->bank_details)
-    @php $bank = json_decode($invoice->company->bank_details, true); @endphp
+    @php
+    $bank = is_array($invoice->company->bank_details)
+    ? $invoice->company->bank_details
+    : json_decode($invoice->company->bank_details, true);
+    @endphp
     @if(!empty($bank['upi_id']))
     <div class="qr-code" style="text-align: right; margin-top: 20px;">
         <p style="font-size: 10px;">Scan to Pay via UPI</p>

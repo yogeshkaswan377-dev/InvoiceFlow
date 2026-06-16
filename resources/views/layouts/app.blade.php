@@ -19,6 +19,10 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- Toastify JS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
     @stack('styles')
 </head>
 
@@ -62,6 +66,9 @@
     </div>
 
     @stack('scripts')
+    <x-toast />
+    @stack('scripts')
+
 </body>
 
 </html>

@@ -3,43 +3,34 @@
 namespace App\Mail;
 
 use App\Models\Invoice;
-use Illuminate\Bus\Queueable;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Mail\Mailables\Attachment;
-use Illuminate\Queue\SerializesModels;
-use Barryvdh\DomPDF\Facade\Pdf;
 
-class InvoiceMail extends Mailable
+class ProformaMail extends Mailable
 {
-    use Queueable, SerializesModels;
-
-    public function __construct(
-        public Invoice $invoice,
-        public string $subjectLine = ''
-    ) {}
+    public function __construct(public Invoice $invoice) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: $this->subjectLine ?: 'Invoice #' . $this->invoice->invoice_number . ' from ' . $this->invoice->company->name,
+            subject: 'Proforma Invoice #' . $this->invoice->invoice_number . ' from ' . $this->invoice->company->name,
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.invoice',
+            view: 'emails.proforma',
             with: ['invoice' => $this->invoice]
         );
     }
 
     public function attachments(): array
     {
-        $view = $this->invoice->invoice_type === 'gst_invoice' ? 'gst-invoices.pdf' : 'proformas.pdf';
-        $pdf = Pdf::loadView($view, ['invoice' => $this->invoice]);
-
+        $pdf = Pdf::loadView('proformas.pdf', ['invoice' => $this->invoice]);
         return [
             Attachment::fromData(fn() => $pdf->output(), $this->invoice->invoice_number . '.pdf')
                 ->withMime('application/pdf'),
