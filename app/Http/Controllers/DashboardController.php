@@ -2,119 +2,143 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Client;
 use App\Models\Invoice;
-use App\Models\Product;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Client;
+use App\Models\Company;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $companyId = Auth::user()->current_company_id;
+        $companyId = session('current_company_id')
+            ?? auth()->user()->current_company_id
+            ?? Company::first()?->id;
 
-        // Stats
+        $company = Company::find($companyId);
+
+        // Total Invoices
         $totalInvoices = Invoice::where('company_id', $companyId)->count();
+        $lastMonthInvoices = Invoice::where('company_id', $companyId)
+            ->whereMonth('invoice_date', Carbon::now()->subMonth()->month)
+            ->whereYear('invoice_date', Carbon::now()->subMonth()->year)
+            ->count();
+        $thisMonthInvoices = Invoice::where('company_id', $companyId)
+            ->whereMonth('invoice_date', Carbon::now()->month)
+            ->whereYear('invoice_date', Carbon::now()->year)
+            ->count();
+        $invoiceGrowth = $lastMonthInvoices > 0
+            ? round((($thisMonthInvoices - $lastMonthInvoices) / $lastMonthInvoices) * 100)
+            : ($thisMonthInvoices > 0 ? 100 : 0);
 
-        $totalClients = Client::where('company_id', $companyId)->count();
-
-        $totalProducts = Product::where('company_id', $companyId)->count();
-
+        // Total Revenue
         $totalRevenue = Invoice::where('company_id', $companyId)
+            ->where('status', 'paid')->sum('grand_total');
+
+        $lastMonthRevenue = Invoice::where('company_id', $companyId)
             ->where('status', 'paid')
+            ->whereMonth('invoice_date', Carbon::now()->subMonth()->month)
+            ->whereYear('invoice_date', Carbon::now()->subMonth()->year)
             ->sum('grand_total');
 
+        $thisMonthRevenue = Invoice::where('company_id', $companyId)
+            ->where('status', 'paid')
+            ->whereMonth('invoice_date', Carbon::now()->month)
+            ->whereYear('invoice_date', Carbon::now()->year)
+            ->sum('grand_total');
+
+        $revenueGrowth = $lastMonthRevenue > 0
+            ? round((($thisMonthRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100)
+            : ($thisMonthRevenue > 0 ? 100 : 0);
+
+        // Pending Amount
         $pendingAmount = Invoice::where('company_id', $companyId)
-            ->whereIn('status', [
-                'sent',
-                'viewed',
-                'accepted',
-                'partially_paid',
-                'overdue'
-            ])
+            ->whereIn('status', ['sent', 'viewed', 'accepted'])
             ->sum('balance_due');
 
-        $overdueCount = Invoice::where('company_id', $companyId)
-            ->where('status', 'overdue')
+        // Invoice Status Counts
+        $paidCount = Invoice::where('company_id', $companyId)->where('status', 'paid')->count();
+        $pendingCount = Invoice::where('company_id', $companyId)->whereIn('status', ['sent', 'viewed', 'accepted'])->count();
+        $overdueCount = Invoice::where('company_id', $companyId)->where('status', 'overdue')->count();
+        $draftCount = Invoice::where('company_id', $companyId)->where('status', 'draft')->count();
+
+        // Total Clients
+        $totalClients = Client::where('company_id', $companyId)->count();
+        $newClientsThisMonth = Client::where('company_id', $companyId)
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
             ->count();
 
-        $draftCount = Invoice::where('company_id', $companyId)
-            ->where('status', 'draft')
-            ->count();
+        // Top Clients — RAW QUERY (no relationship needed)
+        $topClients = DB::table('clients')
+            ->leftJoin('invoices', function ($join) use ($companyId) {
+                $join->on('clients.id', '=', 'invoices.client_id')
+                    ->where('invoices.status', '=', 'paid')
+                    ->whereNull('invoices.deleted_at');
+            })
+            ->select(
+                'clients.id',
+                'clients.name',
+                DB::raw('COUNT(invoices.id) as invoices_count'),
+                DB::raw('COALESCE(SUM(invoices.grand_total), 0) as total_revenue')
+            )
+            ->where('clients.company_id', $companyId)
+
+            ->groupBy('clients.id', 'clients.name')
+            ->orderByDesc('total_revenue')
+            ->limit(5)
+            ->get();
 
         // Recent Invoices
         $recentInvoices = Invoice::where('company_id', $companyId)
             ->with('client')
-            ->latest()
-            ->take(5)
+            ->latest('invoice_date')
+            ->limit(5)
             ->get();
 
         // Recent Clients
         $recentClients = Client::where('company_id', $companyId)
             ->latest()
-            ->take(5)
+            ->limit(4)
             ->get();
 
-        // Monthly Revenue (Last 6 Months)
-        $monthlyRevenue = [];
-
+        // Chart Data — Last 6 months
+        $chartLabels = [];
+        $chartData = [];
         for ($i = 5; $i >= 0; $i--) {
-            $month = now()->subMonths($i);
+            $month = Carbon::now()->subMonths($i);
+            $chartLabels[] = $month->format('M');
 
-            $revenue = Invoice::where('company_id', $companyId)
+            $sum = Invoice::where('company_id', $companyId)
+                ->where('status', 'paid')
                 ->whereYear('invoice_date', $month->year)
                 ->whereMonth('invoice_date', $month->month)
                 ->sum('grand_total');
 
-            $monthlyRevenue[] = [
-                'month' => $month->format('M Y'),
-                'revenue' => (float) $revenue,
-            ];
+            // 👇 FORCE FLOAT (not int, not string)
+            $chartData[] = (float) $sum;
         }
 
-        // Invoice Status Counts
-        $statusCounts = [
-            'draft' => Invoice::where('company_id', $companyId)
-                ->where('status', 'draft')
-                ->count(),
-
-            'sent' => Invoice::where('company_id', $companyId)
-                ->where('status', 'sent')
-                ->count(),
-
-            'paid' => Invoice::where('company_id', $companyId)
-                ->where('status', 'paid')
-                ->count(),
-
-            'overdue' => Invoice::where('company_id', $companyId)
-                ->where('status', 'overdue')
-                ->count(),
-        ];
-
-        // Invoice Type Counts
-        $typeCounts = [
-            'proforma' => Invoice::where('company_id', $companyId)
-                ->where('invoice_type', 'proforma')
-                ->count(),
-
-            'gst_invoice' => Invoice::where('company_id', $companyId)
-                ->where('invoice_type', 'gst_invoice')
-                ->count(),
-        ];
-
         return view('dashboard', compact(
+            'company',
             'totalInvoices',
-            'totalClients',
-            'totalProducts',
+            'invoiceGrowth',
             'totalRevenue',
+            'revenueGrowth',
             'pendingAmount',
+            'paidCount',
+            'pendingCount',
             'overdueCount',
             'draftCount',
+            'totalClients',
+            'newClientsThisMonth',
+            'topClients',
             'recentInvoices',
             'recentClients',
-            'monthlyRevenue',
-            'statusCounts',
-            'typeCounts'
+            'chartLabels',
+            'chartData'
         ));
     }
 }

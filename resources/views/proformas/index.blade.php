@@ -39,7 +39,7 @@
                         <button type="submit" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm">
                             Filter
                         </button>
-                        <a href="{{ route('proformas.index') }}" class="text-gray-500 hover:text-gray-700 px-4 py-2 text-sm">
+                        <a href="{{ url('proformas') }}" class="text-gray-500 hover:text-gray-700 px-4 py-2 text-sm">
                             Clear
                         </a>
                     </form>
@@ -67,7 +67,7 @@
                                 @foreach($invoices as $invoice)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        <a href="{{ route('proformas.show', $invoice->id) }}" class="text-blue-600 hover:underline">
+                                        <a href="{{ url('proformas', $invoice->id) }}" class="text-blue-600 hover:underline">
                                             {{ $invoice->invoice_number }}
                                         </a>
                                     </td>
@@ -96,7 +96,7 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                        <a href="{{ route('proformas.show', $invoice->id) }}" class="text-blue-600 hover:text-blue-900">View</a>
+                                        <a href="{{ url('proformas', $invoice->id) }}" class="text-blue-600 hover:text-blue-900">View</a>
                                         @if($invoice->isEditable())
                                         <a href="{{ route('proformas.edit', $invoice->id) }}" class="text-yellow-600 hover:text-yellow-900">Edit</a>
                                         @endif

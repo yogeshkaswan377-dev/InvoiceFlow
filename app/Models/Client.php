@@ -40,6 +40,11 @@ class Client extends Model
         return $this->belongsTo(Company::class);
     }
 
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     protected static function booted()
     {
         static::creating(function ($client) {

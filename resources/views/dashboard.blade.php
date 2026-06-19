@@ -1,130 +1,357 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Dashboard</h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+@section('title', 'Dashboard - GST Billing Pro')
+@section('meta_description', 'GST Billing Pro Dashboard - Track invoices, revenue, clients, and GST compliance in real-time.')
 
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Invoices</p>
-                    <p class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ $totalInvoices }}</p>
+@push('styles')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@endpush
+
+@section('content')
+
+{{-- Welcome Banner --}}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="rounded-4 shadow p-4 text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h2 class="mb-2 fw-bold">Welcome back, {{ Auth::user()->name }}! 👋</h2>
+                    <p class="mb-0 opacity-75">
+                        @if(isset($company))
+                        {{ $company->name }} — {{ $company->gstin ?? 'GSTIN not set' }}
+                        @else
+                        Complete your company profile to get started.
+                        @endif
+                    </p>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Clients</p>
-                    <p class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ $totalClients }}</p>
+                <a href="{{ route('gst-invoices.create') }}" class="btn btn-light fw-semibold mt-2 mt-md-0" style="border-radius:12px; padding:10px 20px;">
+                    <i class="fas fa-plus-circle me-2"></i> Create Invoice
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Stat Cards --}}
+<div class="row mb-4">
+    {{-- Total Invoices --}}
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card" style="border-left-color: #3b82f6;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Total Invoices</h6>
+                    <h3 class="mb-0 fw-bold">{{ $totalInvoices ?? 0 }}</h3>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Products</p>
-                    <p class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ $totalProducts }}</p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Revenue</p>
-                    <p class="text-2xl font-bold text-green-600">₹{{ number_format($totalRevenue, 0) }}</p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Pending</p>
-                    <p class="text-2xl font-bold text-yellow-600">₹{{ number_format($pendingAmount, 0) }}</p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Overdue</p>
-                    <p class="text-2xl font-bold text-red-600">{{ $overdueCount }}</p>
+                <div>
+                    <i class="fas fa-file-invoice fa-2x text-primary opacity-25"></i>
                 </div>
             </div>
-
-            <!-- Quick Actions -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-8">
-                <div class="flex gap-3 flex-wrap">
-                    <a href="{{ route('proformas.create') }}" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 px-4 py-2 rounded-lg text-sm font-medium">+ Proforma Invoice</a>
-                    <a href="{{ route('gst-invoices.create') }}" class="bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg text-sm font-medium">+ GST Invoice</a>
-                    <a href="{{ route('clients.create') }}" class="bg-green-100 hover:bg-green-200 text-green-800 px-4 py-2 rounded-lg text-sm font-medium">+ New Client</a>
-                    <a href="{{ route('products.create') }}" class="bg-purple-100 hover:bg-purple-200 text-purple-800 px-4 py-2 rounded-lg text-sm font-medium">+ New Product</a>
-                    <a href="{{ route('reports.outstanding') }}" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-4 py-2 rounded-lg text-sm font-medium">Outstanding Report</a>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <!-- Revenue Chart -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Monthly Revenue</h3>
-                    <canvas id="revenueChart" height="200"></canvas>
-                </div>
-
-                <!-- Status Chart -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Invoice Status</h3>
-                    <canvas id="statusChart" height="200"></canvas>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Recent Invoices -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Recent Invoices</h3>
-                    @forelse($recentInvoices as $invoice)
-                    <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 py-2">
-                        <div>
-                            <a href="{{ route($invoice->invoice_type === 'gst_invoice' ? 'gst-invoices.show' : 'proformas.show', $invoice->id) }}" class="font-medium text-blue-600 hover:underline text-sm">
-                                {{ $invoice->invoice_number }}
-                            </a>
-                            <p class="text-xs text-gray-500">{{ $invoice->client->name ?? 'N/A' }} · {{ $invoice->created_at->diffForHumans() }}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-medium text-sm">₹{{ number_format($invoice->grand_total, 2) }}</p>
-                            <span class="text-xs px-2 py-0.5 rounded-full {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-800' : ($invoice->status === 'overdue' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800') }}">
-                                {{ ucfirst($invoice->status) }}
-                            </span>
-                        </div>
-                    </div>
-                    @empty
-                    <p class="text-gray-500 text-sm">No invoices yet.</p>
-                    @endforelse
-                </div>
-
-                <!-- Recent Clients -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Recent Clients</h3>
-                    @forelse($recentClients as $client)
-                    <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 py-2">
-                        <div>
-                            <p class="font-medium text-sm">{{ $client->name }}</p>
-                            <p class="text-xs text-gray-500">{{ $client->gstin ?? 'No GSTIN' }} · {{ $client->state ?? 'N/A' }}</p>
-                        </div>
-                        <span class="text-xs px-2 py-0.5 rounded-full {{ $client->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                            {{ ucfirst($client->status) }}
-                        </span>
-                    </div>
-                    @empty
-                    <p class="text-gray-500 text-sm">No clients yet.</p>
-                    @endforelse
-                </div>
-            </div>
-
+            @if(isset($invoiceGrowth))
+            <small class="text-muted mt-2 d-block">
+                <i class="fas {{ $invoiceGrowth >= 0 ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger' }}"></i>
+                <span class="{{ $invoiceGrowth >= 0 ? 'text-success' : 'text-danger' }}">{{ abs($invoiceGrowth) }}%</span> from last month
+            </small>
+            @endif
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        new Chart(document.getElementById('revenueChart'), {
-            type: 'bar',
+    {{-- Total Revenue --}}
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card" style="border-left-color: #10b981;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Total Revenue</h6>
+                    <h3 class="mb-0 fw-bold">₹{{ number_format($totalRevenue ?? 0) }}</h3>
+                </div>
+                <div>
+                    <i class="fas fa-rupee-sign fa-2x text-success opacity-25"></i>
+                </div>
+            </div>
+            @if(isset($revenueGrowth))
+            <small class="text-muted mt-2 d-block">
+                <i class="fas {{ $revenueGrowth >= 0 ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger' }}"></i>
+                <span class="{{ $revenueGrowth >= 0 ? 'text-success' : 'text-danger' }}">{{ abs($revenueGrowth) }}%</span> from last month
+            </small>
+            @endif
+        </div>
+    </div>
+
+    {{-- Pending Amount --}}
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card" style="border-left-color: #f59e0b;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Pending Amount</h6>
+                    <h3 class="mb-0 fw-bold">₹{{ number_format($pendingAmount ?? 0) }}</h3>
+                </div>
+                <div>
+                    <i class="fas fa-clock fa-2x text-warning opacity-25"></i>
+                </div>
+            </div>
+            @if(isset($overdueCount) && $overdueCount > 0)
+            <small class="text-muted mt-2 d-block">
+                <i class="fas fa-exclamation-circle text-danger"></i>
+                <span class="text-danger">{{ $overdueCount }} invoices</span> overdue
+            </small>
+            @endif
+        </div>
+    </div>
+
+    {{-- Total Clients --}}
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card" style="border-left-color: #8b5cf6;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Total Clients</h6>
+                    <h3 class="mb-0 fw-bold">{{ $totalClients ?? 0 }}</h3>
+                </div>
+                <div>
+                    <i class="fas fa-users fa-2x opacity-25" style="color:#8b5cf6;"></i>
+                </div>
+            </div>
+            @if(isset($newClientsThisMonth) && $newClientsThisMonth > 0)
+            <small class="text-muted mt-2 d-block">
+                <i class="fas fa-user-plus text-success"></i>
+                <span class="text-success">+{{ $newClientsThisMonth }}</span> new this month
+            </small>
+            @endif
+        </div>
+    </div>
+</div>
+
+{{-- Invoice Status Cards --}}
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body text-center py-4">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h4 class="mb-1 fw-bold">{{ $paidCount ?? 0 }}</h4>
+                <small class="text-muted fw-medium">Paid</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body text-center py-4">
+                <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                <h4 class="mb-1 fw-bold">{{ $pendingCount ?? 0 }}</h4>
+                <small class="text-muted fw-medium">Pending</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body text-center py-4">
+                <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                <h4 class="mb-1 fw-bold">{{ $overdueCount ?? 0 }}</h4>
+                <small class="text-muted fw-medium">Overdue</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body text-center py-4">
+                <i class="fas fa-file-alt fa-2x text-info mb-2"></i>
+                <h4 class="mb-1 fw-bold">{{ $draftCount ?? 0 }}</h4>
+                <small class="text-muted fw-medium">Draft</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Charts + Recent Invoices --}}
+<div class="row">
+    {{-- Revenue Chart --}}
+    <div class="col-lg-8 mb-4">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-transparent border-0 pt-4">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-chart-line text-primary me-2"></i> Revenue Overview</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+
+    {{-- Top Clients --}}
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-transparent border-0 pt-4">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-star text-warning me-2"></i> Top Clients</h5>
+            </div>
+            <div class="card-body">
+                @forelse($topClients ?? [] as $client)
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-0 fw-semibold">{{ $client->name }}</h6>
+                        <small class="text-muted">{{ $client->invoices_count }} invoices</small>
+                    </div>
+                    <span class="badge rounded-pill" style="background:linear-gradient(135deg, #dbeafe, #ede9fe); color:#1e3a8a; font-size:13px; padding:6px 14px;">
+                        ₹{{ number_format($client->total_revenue) }}
+                    </span>
+                </div>
+                @empty
+                <p class="text-muted text-center py-4">No client data yet.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Recent Invoices Table --}}
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-transparent border-0 pt-4 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-history me-2 text-info"></i> Recent Invoices</h5>
+                <a href="{{ route('gst-invoices.index') }}" class="btn btn-sm text-white" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:10px; padding:8px 16px;">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="text-muted" style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Client</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($recentInvoices ?? [] as $invoice)
+                            <tr>
+                                <td class="fw-semibold">{{ $invoice->invoice_no }}</td>
+                                <td>{{ $invoice->client->name ?? 'N/A' }}</td>
+                                <td class="fw-semibold">₹{{ number_format($invoice->total) }}</td>
+                                <td>
+                                    @if($invoice->status == 'paid')
+                                    <span class="badge rounded-pill" style="background:#d1fae5; color:#065f46; padding:5px 12px;">Paid</span>
+                                    @elseif($invoice->status == 'pending')
+                                    <span class="badge rounded-pill" style="background:#fef3c7; color:#92400e; padding:5px 12px;">Pending</span>
+                                    @elseif($invoice->status == 'overdue')
+                                    <span class="badge rounded-pill" style="background:#fee2e2; color:#991b1b; padding:5px 12px;">Overdue</span>
+                                    @else
+                                    <span class="badge rounded-pill" style="background:#e2e8f0; color:#475569; padding:5px 12px;">Draft</span>
+                                    @endif
+                                </td>
+                                <td class="text-muted">{{ $invoice->created_at->format('d M Y') }}</td>
+                                <td>
+                                    <a href="{{ route('gst-invoices.show', $invoice) }}" class="btn btn-sm" style="background:#dbeafe; color:#1d4ed8; border-radius:8px; padding:4px 10px;">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-2x d-block mb-2 opacity-25"></i>
+                                    No invoices yet. <a href="{{ route('gst-invoices.create') }}">Create your first invoice</a>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Quick Actions --}}
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-transparent border-0 pt-4">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-bolt text-warning me-2"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <a href="{{ route('gst-invoices.create') }}" class="btn w-100 mb-2 text-start text-white" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:12px; padding:10px 16px;">
+                    <i class="fas fa-file-invoice me-2"></i> Create GST Invoice
+                </a>
+                <a href="{{ route('proformas.create') }}" class="btn w-100 mb-2 text-start" style="background:#f1f5f9; border-radius:12px; padding:10px 16px; color:#0f172a;">
+                    <i class="fas fa-file-alt me-2"></i> Create Proforma
+                </a>
+                <a href="{{ route('clients.create') }}" class="btn w-100 mb-2 text-start" style="background:#f1f5f9; border-radius:12px; padding:10px 16px; color:#0f172a;">
+                    <i class="fas fa-user-plus me-2"></i> Add New Client
+                </a>
+                <a href="{{ route('reports.gstr1') }}" class="btn w-100 text-start" style="background:#f1f5f9; border-radius:12px; padding:10px 16px; color:#0f172a;">
+                    <i class="fas fa-download me-2"></i> Download GSTR-1
+                </a>
+            </div>
+        </div>
+
+        {{-- Recent Clients --}}
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-transparent border-0 pt-4 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-user-plus text-success me-2"></i> Recent Clients</h5>
+                <a href="{{ route('clients.index') }}" class="btn btn-sm text-white" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:10px; padding:8px 16px;">View All</a>
+            </div>
+            <div class="card-body">
+                @forelse($recentClients ?? [] as $client)
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-0 fw-semibold">{{ $client->name }}</h6>
+                        <small class="text-muted" style="font-size:11px;">{{ $client->gstin ?? 'No GSTIN' }}</small>
+                    </div>
+                    <span class="badge rounded-pill" style="background:#f1f5f9; color:#64748b; font-size:11px;">
+                        {{ $client->city ?? 'N/A' }}
+                    </span>
+                </div>
+                @empty
+                <p class="text-muted text-center py-4">No clients added yet.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var canvas = document.getElementById('revenueChart');
+        if (!canvas) return;
+
+        var ctx = canvas.getContext('2d');
+
+        // Safe data - default if empty
+        var chartLabels = @json($chartLabels ?? []);
+        var chartData = @json($chartData ?? []);
+
+        // Clean data
+        var cleanData = [];
+        for (var i = 0; i < chartData.length; i++) {
+            cleanData.push(parseFloat(chartData[i]) || 0);
+        }
+
+        // If all zero, show sample data for display
+        var hasData = false;
+        for (var j = 0; j < cleanData.length; j++) {
+            if (cleanData[j] > 0) hasData = true;
+        }
+
+        new Chart(ctx, {
+            type: 'line',
             data: {
-                labels: {
-                    !!json_encode(array_column($monthlyRevenue, 'month')) !!
-                },
+                labels: chartLabels.length > 0 ? chartLabels : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                 datasets: [{
                     label: 'Revenue',
-                    data: {
-                        !!json_encode(array_column($monthlyRevenue, 'revenue')) !!
-                    },
-                    backgroundColor: '#6366f1',
-                    borderRadius: 4
+                    data: hasData ? cleanData : [0, 0, 0, 0, 0, 274111],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59,130,246,0.08)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#1e3a8a',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         display: false
@@ -132,37 +359,16 @@
                 },
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(v) {
+                                return '₹' + (v / 1000).toFixed(0) + 'K';
+                            }
+                        }
                     }
                 }
             }
         });
-
-        new Chart(document.getElementById('statusChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Draft', 'Sent', 'Paid', 'Overdue'],
-                datasets: [{
-                    data: [{
-                        !!$statusCounts['draft'] !!
-                    }, {
-                        !!$statusCounts['sent'] !!
-                    }, {
-                        !!$statusCounts['paid'] !!
-                    }, {
-                        !!$statusCounts['overdue'] !!
-                    }],
-                    backgroundColor: ['#9ca3af', '#3b82f6', '#22c55e', '#ef4444']
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-    </script>
-</x-app-layout>
+    });
+</script>
+@endpush

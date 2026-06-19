@@ -86,7 +86,7 @@
                             </td>
                             <td class="text-right">
                                 <div class="flex items-center justify-end gap-2">
-                                    <a href="{{ route('clients.show', $client) }}" class="p-1.5 rounded-lg transition hover:opacity-70" style="color: var(--color-text-secondary);" title="View">
+                                    <a href="{{ url('clients', $client) }}" class="p-1.5 rounded-lg transition hover:opacity-70" style="color: var(--color-text-secondary);" title="View">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                     </a>
                                     <a href="{{ route('clients.edit', $client) }}" class="p-1.5 rounded-lg transition hover:opacity-70" style="color: var(--color-primary);" title="Edit">

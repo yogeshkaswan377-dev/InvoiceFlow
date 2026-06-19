@@ -36,97 +36,118 @@ class SampleDataSeeder extends Seeder
             ]);
         }
 
-        $company2 = Company::create([
-            'name' => 'Tech Solutions India',
-            'email' => 'info@techsolutions.com',
-            'phone' => '9988776655',
-            'gstin' => '29AABCT1234E1Z6',
-            'state_code' => '29',
-            'state' => 'Karnataka',
-            'address_line_1' => '456, Tech Park, Whitefield',
-            'city' => 'Bangalore',
-            'pincode' => '560066',
-            'country' => 'India',
-            'subscription_plan' => 'basic',
-            'is_active' => 1,
-        ]);
+        $company2 = Company::firstOrCreate(
+            ['email' => 'info@techsolutions.com'],
+            [
+                'name' => 'Tech Solutions India',
+                'phone' => '9988776655',
+                'gstin' => '29AABCT1234E1Z6',
+                'state_code' => '29',
+                'state' => 'Karnataka',
+                'address_line_1' => '456, Tech Park, Whitefield',
+                'city' => 'Bangalore',
+                'pincode' => '560066',
+                'country' => 'India',
+                'subscription_plan' => 'basic',
+                'is_active' => 1,
+            ]
+        );
 
-        $company3 = Company::create([
-            'name' => 'Gujarat Textiles',
-            'email' => 'info@gujarattextiles.com',
-            'phone' => '9876541230',
-            'gstin' => '24ABCDE5678F1Z9',
-            'state_code' => '24',
-            'state' => 'Gujarat',
-            'address_line_1' => '789, Textile Market',
-            'city' => 'Ahmedabad',
-            'pincode' => '380001',
-            'country' => 'India',
-            'subscription_plan' => 'premium',
-            'is_active' => 1,
-        ]);
+        $company3 = Company::firstOrCreate(
+            ['email' => 'info@gujarattextiles.com'],
+            [
+                'name' => 'Gujarat Textiles',
+                'phone' => '9876541230',
+                'gstin' => '24ABCDE5678F1Z9',
+                'state_code' => '24',
+                'state' => 'Gujarat',
+                'address_line_1' => '789, Textile Market',
+                'city' => 'Ahmedabad',
+                'pincode' => '380001',
+                'country' => 'India',
+                'subscription_plan' => 'premium',
+                'is_active' => 1,
+            ]
+        );
 
         // ============================================
         // 2. USERS
         // ============================================
-        $admin1 = User::where('email', 'admin@example.com')->first();
-        if (!$admin1) {
-            $admin1 = User::create([
+        $admin1 = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
                 'name' => 'Admin User',
-                'email' => 'admin@example.com',
                 'password' => Hash::make('password'),
                 'company_id' => $company1->id,
                 'current_company_id' => $company1->id,
                 'phone' => '9876543210',
-            ]);
+            ]
+        );
+        if (!$admin1->hasRole('owner')) {
             $admin1->assignRole('owner', $company1->id);
         }
 
-        $owner2 = User::create([
-            'name' => 'Rahul Sharma',
-            'email' => 'rahul@techsolutions.com',
-            'password' => Hash::make('password'),
-            'company_id' => $company2->id,
-            'current_company_id' => $company2->id,
-            'phone' => '9988776655',
-        ]);
-        $owner2->assignRole('owner', $company2->id);
+        $owner2 = User::firstOrCreate(
+            ['email' => 'rahul@techsolutions.com'],
+            [
+                'name' => 'Rahul Sharma',
+                'password' => Hash::make('password'),
+                'company_id' => $company2->id,
+                'current_company_id' => $company2->id,
+                'phone' => '9988776655',
+            ]
+        );
+        if (!$owner2->hasRole('owner')) {
+            $owner2->assignRole('owner', $company2->id);
+        }
 
-        $owner3 = User::create([
-            'name' => 'Amit Patel',
-            'email' => 'amit@gujarattextiles.com',
-            'password' => Hash::make('password'),
-            'company_id' => $company3->id,
-            'current_company_id' => $company3->id,
-            'phone' => '9876541230',
-        ]);
-        $owner3->assignRole('owner', $company3->id);
+        $owner3 = User::firstOrCreate(
+            ['email' => 'amit@gujarattextiles.com'],
+            [
+                'name' => 'Amit Patel',
+                'password' => Hash::make('password'),
+                'company_id' => $company3->id,
+                'current_company_id' => $company3->id,
+                'phone' => '9876541230',
+            ]
+        );
+        if (!$owner3->hasRole('owner')) {
+            $owner3->assignRole('owner', $company3->id);
+        }
 
         // Staff for Demo Business
-        $staff1 = User::create([
-            'name' => 'Priya Singh',
-            'email' => 'priya@demobusiness.com',
-            'password' => Hash::make('password'),
-            'company_id' => $company1->id,
-            'current_company_id' => $company1->id,
-            'phone' => '9876512345',
-        ]);
-        $staff1->assignRole('staff', $company1->id);
+        $staff1 = User::firstOrCreate(
+            ['email' => 'priya@demobusiness.com'],
+            [
+                'name' => 'Priya Singh',
+                'password' => Hash::make('password'),
+                'company_id' => $company1->id,
+                'current_company_id' => $company1->id,
+                'phone' => '9876512345',
+            ]
+        );
+        if (!$staff1->hasRole('staff')) {
+            $staff1->assignRole('staff', $company1->id);
+        }
 
-        $staff2 = User::create([
-            'name' => 'Vikram Desai',
-            'email' => 'vikram@demobusiness.com',
-            'password' => Hash::make('password'),
-            'company_id' => $company1->id,
-            'current_company_id' => $company1->id,
-            'phone' => '9876512346',
-        ]);
-        $staff2->assignRole('admin', $company1->id);
+        $staff2 = User::firstOrCreate(
+            ['email' => 'vikram@demobusiness.com'],
+            [
+                'name' => 'Vikram Desai',
+                'password' => Hash::make('password'),
+                'company_id' => $company1->id,
+                'current_company_id' => $company1->id,
+                'phone' => '9876512346',
+            ]
+        );
+        if (!$staff2->hasRole('admin')) {
+            $staff2->assignRole('admin', $company1->id);
+        }
 
         // ============================================
         // 3. CLIENTS (Demo Business)
         // ============================================
-        $clients = [
+        $clientData = [
             [
                 'company_id' => $company1->id,
                 'client_type' => 'business',
@@ -221,14 +242,18 @@ class SampleDataSeeder extends Seeder
             ],
         ];
 
-        foreach ($clients as $client) {
-            Client::create($client);
+        $clientModels = [];
+        foreach ($clientData as $data) {
+            $clientModels[] = Client::firstOrCreate(
+                ['email' => $data['email'], 'company_id' => $company1->id],
+                $data
+            );
         }
 
         // ============================================
         // 4. PRODUCTS (Demo Business)
         // ============================================
-        $products = [
+        $productData = [
             ['company_id' => $company1->id, 'name' => 'Web Development Service', 'hsn_sac_code' => '998313', 'unit_price' => 50000, 'gst_rate' => 18, 'unit' => 'project'],
             ['company_id' => $company1->id, 'name' => 'IT Consulting', 'hsn_sac_code' => '998314', 'unit_price' => 25000, 'gst_rate' => 18, 'unit' => 'hour'],
             ['company_id' => $company1->id, 'name' => 'Cloud Hosting - Monthly', 'hsn_sac_code' => '998315', 'unit_price' => 5000, 'gst_rate' => 18, 'unit' => 'month'],
@@ -237,32 +262,41 @@ class SampleDataSeeder extends Seeder
             ['company_id' => $company1->id, 'name' => 'Annual Maintenance', 'hsn_sac_code' => '9987', 'unit_price' => 12000, 'gst_rate' => 18, 'unit' => 'year'],
         ];
 
-        foreach ($products as $product) {
-            Product::create($product);
+        $productModels = [];
+        foreach ($productData as $data) {
+            $productModels[] = Product::firstOrCreate(
+                ['name' => $data['name'], 'company_id' => $company1->id],
+                $data
+            );
         }
 
         // ============================================
-        // 5. INVOICES (Demo Business)
+        // 5. INVOICES (Demo Business) — FIXED COLUMNS
         // ============================================
-        $clientsList = Client::where('company_id', $company1->id)->get();
-        $productsList = Product::where('company_id', $company1->id)->get();
 
-        // Proforma Invoice 1 - Draft
+        // Only seed if no invoices exist for company1
+        if (Invoice::where('company_id', $company1->id)->count() > 0) {
+            echo "\n⚠️  Invoices already exist for Demo Business. Skipping invoice seeding.\n";
+            return;
+        }
+
+        // --- Proforma Invoice 1 - Draft ---
         $proforma1 = Invoice::create([
             'company_id' => $company1->id,
-            'client_id' => $clientsList[0]->id,
+            'client_id' => $clientModels[0]->id,
             'invoice_number' => 'PRO-2026-00001',
             'invoice_type' => 'proforma',
             'invoice_date' => '2026-06-10',
             'due_date' => '2026-07-10',
             'subtotal' => 50000,
             'discount_amount' => 0,
-            'taxable_value' => 50000,
+            'taxable_amount' => 50000,           // ✅ FIXED
             'total_gst_amount' => 9000,
             'cgst_amount' => 4500,
             'sgst_amount' => 4500,
             'igst_amount' => 0,
             'grand_total' => 59000,
+            'paid_amount' => 0,                   // ✅ Added
             'balance_due' => 59000,
             'status' => 'draft',
             'place_of_supply' => 'intra_state',
@@ -272,33 +306,34 @@ class SampleDataSeeder extends Seeder
 
         InvoiceItem::create([
             'invoice_id' => $proforma1->id,
-            'name' => $productsList[0]->name,
-            'hsn_sac_code' => $productsList[0]->hsn_sac_code,
+            'name' => $productModels[0]->name,
+            'hsn_sac_code' => $productModels[0]->hsn_sac_code,
             'quantity' => 1,
             'unit_price' => 50000,
             'gst_rate' => 18,
             'taxable_amount' => 50000,
             'cgst_amount' => 4500,
             'sgst_amount' => 4500,
-            'total_amount' => 59000,
+            'line_total' => 59000,
         ]);
 
-        // Proforma Invoice 2 - Sent
+        // --- Proforma Invoice 2 - Sent (Inter-state) ---
         $proforma2 = Invoice::create([
             'company_id' => $company1->id,
-            'client_id' => $clientsList[1]->id,
+            'client_id' => $clientModels[1]->id,
             'invoice_number' => 'PRO-2026-00002',
             'invoice_type' => 'proforma',
             'invoice_date' => '2026-06-12',
             'due_date' => '2026-07-12',
             'subtotal' => 25000,
             'discount_amount' => 0,
-            'taxable_value' => 25000,
+            'taxable_amount' => 25000,           // ✅ FIXED
             'total_gst_amount' => 4500,
             'igst_amount' => 4500,
             'cgst_amount' => 0,
             'sgst_amount' => 0,
             'grand_total' => 29500,
+            'paid_amount' => 0,
             'balance_due' => 29500,
             'status' => 'sent',
             'place_of_supply' => 'inter_state',
@@ -308,34 +343,35 @@ class SampleDataSeeder extends Seeder
 
         InvoiceItem::create([
             'invoice_id' => $proforma2->id,
-            'name' => $productsList[1]->name,
-            'hsn_sac_code' => $productsList[1]->hsn_sac_code,
+            'name' => $productModels[1]->name,
+            'hsn_sac_code' => $productModels[1]->hsn_sac_code,
             'quantity' => 1,
             'unit_price' => 25000,
             'gst_rate' => 18,
             'taxable_amount' => 25000,
             'igst_amount' => 4500,
-            'total_amount' => 29500,
+            'line_total' => 29500,
         ]);
 
-        // GST Invoice 1 - Paid
+        // --- GST Invoice 1 - Paid ---
         $gst1 = Invoice::create([
             'company_id' => $company1->id,
-            'client_id' => $clientsList[0]->id,
+            'client_id' => $clientModels[0]->id,
             'invoice_number' => 'INV-2026-00001',
             'invoice_type' => 'gst_invoice',
             'invoice_date' => '2026-06-01',
             'due_date' => '2026-06-15',
+            'paid_date' => '2026-06-10',          // ✅ Added
             'subtotal' => 150000,
             'discount_amount' => 0,
-            'taxable_value' => 150000,
+            'taxable_amount' => 150000,           // ✅ FIXED
             'total_gst_amount' => 27000,
             'cgst_amount' => 13500,
             'sgst_amount' => 13500,
             'igst_amount' => 0,
             'grand_total' => 177000,
+            'paid_amount' => 177000,
             'balance_due' => 0,
-            'total_paid' => 177000,
             'status' => 'paid',
             'place_of_supply' => 'intra_state',
             'gst_mode' => 'exclusive',
@@ -344,33 +380,34 @@ class SampleDataSeeder extends Seeder
 
         InvoiceItem::create([
             'invoice_id' => $gst1->id,
-            'name' => $productsList[3]->name,
-            'hsn_sac_code' => $productsList[3]->hsn_sac_code,
+            'name' => $productModels[3]->name,
+            'hsn_sac_code' => $productModels[3]->hsn_sac_code,
             'quantity' => 1,
             'unit_price' => 150000,
             'gst_rate' => 18,
             'taxable_amount' => 150000,
             'cgst_amount' => 13500,
             'sgst_amount' => 13500,
-            'total_amount' => 177000,
+            'line_total' => 177000,
         ]);
 
-        // GST Invoice 2 - Sent (Inter-state)
+        // --- GST Invoice 2 - Sent (Inter-state, 28% GST) ---
         $gst2 = Invoice::create([
             'company_id' => $company1->id,
-            'client_id' => $clientsList[3]->id,
+            'client_id' => $clientModels[3]->id,
             'invoice_number' => 'INV-2026-00002',
             'invoice_type' => 'gst_invoice',
             'invoice_date' => '2026-06-05',
             'due_date' => '2026-06-20',
             'subtotal' => 35000,
             'discount_amount' => 0,
-            'taxable_value' => 35000,
+            'taxable_amount' => 35000,           // ✅ FIXED
             'total_gst_amount' => 9800,
             'igst_amount' => 9800,
             'cgst_amount' => 0,
             'sgst_amount' => 0,
             'grand_total' => 44800,
+            'paid_amount' => 0,
             'balance_due' => 44800,
             'status' => 'sent',
             'place_of_supply' => 'inter_state',
@@ -380,32 +417,33 @@ class SampleDataSeeder extends Seeder
 
         InvoiceItem::create([
             'invoice_id' => $gst2->id,
-            'name' => $productsList[4]->name,
-            'hsn_sac_code' => $productsList[4]->hsn_sac_code,
+            'name' => $productModels[4]->name,
+            'hsn_sac_code' => $productModels[4]->hsn_sac_code,
             'quantity' => 1,
             'unit_price' => 35000,
             'gst_rate' => 28,
             'taxable_amount' => 35000,
             'igst_amount' => 9800,
-            'total_amount' => 44800,
+            'line_total' => 44800,
         ]);
 
-        // GST Invoice 3 - Overdue
+        // --- GST Invoice 3 - Overdue ---
         $gst3 = Invoice::create([
             'company_id' => $company1->id,
-            'client_id' => $clientsList[2]->id,
+            'client_id' => $clientModels[2]->id,
             'invoice_number' => 'INV-2026-00003',
             'invoice_type' => 'gst_invoice',
             'invoice_date' => '2026-05-01',
             'due_date' => '2026-05-15',
             'subtotal' => 12000,
             'discount_amount' => 0,
-            'taxable_value' => 12000,
+            'taxable_amount' => 12000,           // ✅ FIXED
             'total_gst_amount' => 2160,
             'cgst_amount' => 1080,
             'sgst_amount' => 1080,
             'igst_amount' => 0,
             'grand_total' => 14160,
+            'paid_amount' => 0,
             'balance_due' => 14160,
             'status' => 'overdue',
             'place_of_supply' => 'intra_state',
@@ -415,33 +453,34 @@ class SampleDataSeeder extends Seeder
 
         InvoiceItem::create([
             'invoice_id' => $gst3->id,
-            'name' => $productsList[5]->name,
-            'hsn_sac_code' => $productsList[5]->hsn_sac_code,
+            'name' => $productModels[5]->name,
+            'hsn_sac_code' => $productModels[5]->hsn_sac_code,
             'quantity' => 1,
             'unit_price' => 12000,
             'gst_rate' => 18,
             'taxable_amount' => 12000,
             'cgst_amount' => 1080,
             'sgst_amount' => 1080,
-            'total_amount' => 14160,
+            'line_total' => 14160,
         ]);
 
-        // GST Invoice 4 - Export (no GST)
+        // --- GST Invoice 4 - Export (0% GST) ---
         $gst4 = Invoice::create([
             'company_id' => $company1->id,
-            'client_id' => $clientsList[4]->id,
+            'client_id' => $clientModels[4]->id,
             'invoice_number' => 'INV-2026-00004',
             'invoice_type' => 'gst_invoice',
             'invoice_date' => '2026-06-15',
             'due_date' => '2026-07-15',
             'subtotal' => 50000,
             'discount_amount' => 0,
-            'taxable_value' => 50000,
+            'taxable_amount' => 50000,           // ✅ FIXED
             'total_gst_amount' => 0,
             'igst_amount' => 0,
             'cgst_amount' => 0,
             'sgst_amount' => 0,
             'grand_total' => 50000,
+            'paid_amount' => 0,
             'balance_due' => 50000,
             'status' => 'sent',
             'place_of_supply' => 'export',
@@ -451,14 +490,14 @@ class SampleDataSeeder extends Seeder
 
         InvoiceItem::create([
             'invoice_id' => $gst4->id,
-            'name' => $productsList[0]->name,
-            'hsn_sac_code' => $productsList[0]->hsn_sac_code,
+            'name' => $productModels[0]->name,
+            'hsn_sac_code' => $productModels[0]->hsn_sac_code,
             'quantity' => 1,
             'unit_price' => 50000,
             'gst_rate' => 0,
             'taxable_amount' => 50000,
             'igst_amount' => 0,
-            'total_amount' => 50000,
+            'line_total' => 50000,
         ]);
 
         echo "\n✅ Sample data seeded!\n";
@@ -472,6 +511,5 @@ class SampleDataSeeder extends Seeder
         echo "Login:\n";
         echo "  Owner: admin@example.com / password\n";
         echo "  Staff: priya@demobusiness.com / password\n";
-        echo "  Super: super@example.com / password\n";
     }
 }

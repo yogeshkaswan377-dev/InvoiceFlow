@@ -1,3 +1,127 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ========== PREMIUM DESIGN TOKENS ========== */
+@layer base {
+    :root {
+        --premium-shadow-sm:
+            0 1px 2px 0 rgb(0 0 0 / 0.03), 0 1px 2px -1px rgb(0 0 0 / 0.03);
+        --premium-shadow:
+            0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.03);
+        --premium-shadow-md:
+            0 4px 6px -1px rgb(0 0 0 / 0.04), 0 2px 4px -2px rgb(0 0 0 / 0.03);
+        --premium-shadow-lg:
+            0 10px 15px -3px rgb(0 0 0 / 0.04), 0 4px 6px -4px rgb(0 0 0 / 0.03);
+    }
+}
+
+/* ========== GLASS MORPHISM ========== */
+.glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass {
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ========== PREMIUM CARD ========== */
+.premium-card {
+    @apply bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl;
+    box-shadow: var(--premium-shadow);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-card:hover {
+    box-shadow: var(--premium-shadow-lg);
+    transform: translateY(-1px);
+}
+
+.dark .premium-card {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ========== GRADIENT TEXT ========== */
+.gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400;
+}
+
+/* ========== BUTTON HOVER EFFECT ========== */
+.btn-premium {
+    @apply relative overflow-hidden transition-all duration-300;
+}
+
+.btn-premium::after {
+    content: "";
+    @apply absolute inset-0 bg-white opacity-0 transition-opacity duration-300;
+}
+
+.btn-premium:hover::after {
+    @apply opacity-10;
+}
+
+.btn-premium:active {
+    @apply scale-[0.98];
+}
+
+/* ========== SKELETON LOADING ========== */
+.skeleton {
+    @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded-lg;
+}
+
+/* ========== FOCUS RING PREMIUM ========== */
+input:focus,
+select:focus,
+textarea:focus {
+    @apply ring-2 ring-indigo-500/20 border-indigo-500 outline-none;
+}
+
+/* ========== SCROLLBAR HIDDEN ========== */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.shimmer {
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}

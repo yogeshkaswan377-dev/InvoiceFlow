@@ -91,19 +91,19 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'company.selected.api'])->group
     Route::get('clients/search', [ClientController::class, 'search'])->name('api.clients.search');
     Route::get('clients/filter/state', [ClientController::class, 'filterByState'])->name('api.clients.filter.state');
     Route::get('clients/filter/status', [ClientController::class, 'filterByStatus'])->name('api.clients.filter.status');
-    Route::apiResource('clients', ClientController::class);
+    Route::apiResource('clients', ClientController::class)->names('api.clients');
     
     // ─────────────────────────────────────
     // Products
     // ─────────────────────────────────────
 
     Route::get('products/search', [ProductController::class, 'search'])->name('api.products.search');
-    Route::apiResource('products', ProductController::class);
+    Route::apiResource('products', ProductController::class)->names('api.products');
 
     // ─────────────────────────────────────
     // Proforma Invoices
     // ─────────────────────────────────────
-    Route::apiResource('proformas', ProformaController::class);
+    Route::apiResource('proformas', ProformaController::class)->names('api.proformas');
     Route::post('proformas/{id}/convert-to-gst', [ProformaController::class, 'convertToGst'])
         ->name('api.proformas.convert-to-gst')
         ->where('id', '[0-9]+');
@@ -120,7 +120,7 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'company.selected.api'])->group
     // ─────────────────────────────────────
     // GST Invoices
     // ─────────────────────────────────────
-    Route::apiResource('gst-invoices', GSTInvoiceController::class);
+    Route::apiResource('gst-invoices', GSTInvoiceController::class)->names('api.gst-invoices');
     Route::get('gst-invoices/{id}/pdf', [GSTInvoiceController::class, 'pdf'])
         ->name('api.gst-invoices.pdf')
         ->where('id', '[0-9]+');
