@@ -1,0 +1,447 @@
+{
+    "info": {
+        "name": "GST Invoice SaaS API v1",
+        "description": "Complete API collection for GST Invoice SaaS Platform\n\nBase URL: http://localhost:8000/api/v1\nAuth: Bearer Token (Sanctum)",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000/api/v1"
+        },
+        {
+            "key": "token",
+            "value": "1|78Aa6aRyM1I5X5CYiHmZnZYbKzI7vfwwvmvdoM3z3c537c2e"
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "item": [
+        {
+            "name": "Health",
+            "item": [
+                {
+                    "name": "Health Check",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/health"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/login",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password\",\n    \"device_name\": \"postman\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/register",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get User",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/user"
+                    }
+                },
+                {
+                    "name": "Update Profile",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/user/profile",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Updated Name\",\n    \"email\": \"admin@example.com\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Update Password",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/user/password",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"current_password\": \"password\",\n    \"password\": \"newpassword\",\n    \"password_confirmation\": \"newpassword\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/logout"
+                    }
+                },
+                {
+                    "name": "Forgot Password",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/forgot-password",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"admin@example.com\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Dashboard",
+            "item": [
+                {
+                    "name": "Get Stats",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/dashboard/stats"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Company",
+            "item": [
+                {
+                    "name": "Create Company",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/company",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"My Company\",\n    \"state_code\": \"27\",\n    \"state_name\": \"Maharashtra\",\n    \"address_line_1\": \"123 Street\",\n    \"city\": \"Mumbai\",\n    \"pincode\": \"400001\",\n    \"country\": \"India\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get Current Company",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/company/current"
+                    }
+                },
+                {
+                    "name": "Switch Company List",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/company/switch"
+                    }
+                },
+                {
+                    "name": "Set Current Company",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/company/switch/1"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Settings",
+            "item": [
+                {
+                    "name": "Get Settings",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/settings"
+                    }
+                },
+                {
+                    "name": "Update Settings",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/settings",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Updated Company Name\",\n    \"invoice_prefix\": \"INV-\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Clients",
+            "item": [
+                {
+                    "name": "List Clients",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/clients"
+                    }
+                },
+                {
+                    "name": "Create Client",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/clients",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"client_type\": \"business\",\n    \"name\": \"New Client\",\n    \"state_code\": \"27\",\n    \"state_name\": \"Maharashtra\",\n    \"address_line_1\": \"456 Avenue\",\n    \"city\": \"Pune\",\n    \"pincode\": \"411001\",\n    \"country\": \"India\",\n    \"gstin\": \"27AADCB2230M1ZQ\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get Client",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/clients/1"
+                    }
+                },
+                {
+                    "name": "Update Client",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/clients/1",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Updated Client Name\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Client",
+                    "request": {
+                        "method": "DELETE",
+                        "url": "{{base_url}}/clients/1"
+                    }
+                },
+                {
+                    "name": "Search Clients",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/clients/search?q=test"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Products",
+            "item": [
+                {
+                    "name": "List Products",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/products"
+                    }
+                },
+                {
+                    "name": "Create Product",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/products",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Consulting Service\",\n    \"unit_price\": 5000,\n    \"gst_rate\": 18,\n    \"hsn_sac_code\": \"998313\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get Product",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/products/1"
+                    }
+                },
+                {
+                    "name": "Update Product",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/products/1",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"unit_price\": 6000\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Product",
+                    "request": {
+                        "method": "DELETE",
+                        "url": "{{base_url}}/products/1"
+                    }
+                },
+                {
+                    "name": "Search Products",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/products/search?q=consulting"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Proforma Invoices",
+            "item": [
+                {
+                    "name": "List Proformas",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/proformas"
+                    }
+                },
+                {
+                    "name": "Create Proforma",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/proformas",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"client_id\": 1,\n    \"invoice_date\": \"2026-06-16\",\n    \"due_date\": \"2026-07-01\",\n    \"items\": [\n        {\n            \"name\": \"Service Item\",\n            \"quantity\": 1,\n            \"unit_price\": 5000\n        }\n    ]\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get Proforma",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/proformas/1"
+                    }
+                },
+                {
+                    "name": "Update Proforma",
+                    "request": {
+                        "method": "PUT",
+                        "url": "{{base_url}}/proformas/1",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"notes\": \"Updated notes\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Proforma",
+                    "request": {
+                        "method": "DELETE",
+                        "url": "{{base_url}}/proformas/1"
+                    }
+                },
+                {
+                    "name": "Proforma PDF",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/proformas/1/pdf"
+                    }
+                },
+                {
+                    "name": "Send Proforma Email",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/proformas/1/send-email"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GST Invoices",
+            "item": [
+                {
+                    "name": "List GST Invoices",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/gst-invoices"
+                    }
+                },
+                {
+                    "name": "Create GST Invoice",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/gst-invoices",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"client_id\": 1,\n    \"invoice_date\": \"2026-06-16\",\n    \"due_date\": \"2026-07-01\",\n    \"gst_mode\": \"exclusive\",\n    \"items\": [\n        {\n            \"name\": \"Product ABC\",\n            \"quantity\": 2,\n            \"unit_price\": 2500,\n            \"hsn_sac_code\": \"998313\",\n            \"gst_rate\": 18\n        }\n    ]\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get GST Invoice",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/gst-invoices/1"
+                    }
+                },
+                {
+                    "name": "Delete GST Invoice",
+                    "request": {
+                        "method": "DELETE",
+                        "url": "{{base_url}}/gst-invoices/1"
+                    }
+                },
+                {
+                    "name": "GST Invoice PDF",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/gst-invoices/1/pdf"
+                    }
+                },
+                {
+                    "name": "Bulk PDF Download",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/gst-invoices/bulk-pdf",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"ids\": \"1,2,3\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Send GST Invoice Email",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{base_url}}/gst-invoices/1/send-email"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Reports",
+            "item": [
+                {
+                    "name": "Outstanding Report",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/reports/outstanding"
+                    }
+                },
+                {
+                    "name": "GSTR1 Report",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/reports/gstr1?month=6&year=2026"
+                    }
+                },
+                {
+                    "name": "Export CSV",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{base_url}}/reports/export-csv"
+                    }
+                }
+            ]
+        }
+    ]
+}

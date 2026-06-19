@@ -53,6 +53,34 @@
                                 <input type="text" name="pincode" value="{{ $company->pincode }}" class="w-full rounded-md border-gray-300">
                             </div>
                         </div>
+                        <h3 class="text-lg font-semibold mb-4 mt-6 pt-4 border-t">GST Settings</h3>
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Default GST Mode</label>
+                                <select name="gst_mode_default" class="w-full rounded-md border-gray-300">
+                                    <option value="exclusive" {{ ($company->gst_mode_default ?? '') === 'exclusive' ? 'selected' : '' }}>Exclusive (GST extra)</option>
+                                    <option value="inclusive" {{ ($company->gst_mode_default ?? '') === 'inclusive' ? 'selected' : '' }}>Inclusive (GST included)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Invoice Prefix</label>
+                                <input type="text" name="invoice_prefix" value="{{ $company->invoice_prefix ?? 'INV-' }}" class="w-full rounded-md border-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Quote Prefix</label>
+                                <input type="text" name="quote_prefix" value="{{ $company->quote_prefix ?? 'QUO-' }}" class="w-full rounded-md border-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Default Payment Terms (days)</label>
+                                <input type="number" name="default_payment_terms" value="{{ $company->default_payment_terms ?? 15 }}" class="w-full rounded-md border-gray-300">
+                            </div>
+                        </div>
+
+                        {{-- GST Rates (hidden - to pass validation) --}}
+                        <input type="hidden" name="gst_rates[0][rate]" value="18">
+                        <input type="hidden" name="gst_rates[0][cgst]" value="9">
+                        <input type="hidden" name="gst_rates[0][sgst]" value="9">
+                        <input type="hidden" name="gst_rates[0][igst]" value="18">
                         <div class="mb-4">
                             <label class="block text-sm font-medium mb-1">Default Invoice Terms & Conditions</label>
                             <textarea name="invoice_terms" rows="4" class="w-full rounded-md border-gray-300">{{ $company->invoice_terms ?? '' }}</textarea>
@@ -61,14 +89,16 @@
                         <div class="grid grid-cols-2 gap-4 mb-6">
                             <div>
                                 <label class="block text-sm font-medium mb-1">Logo</label>
-                                <input type="file" name="logo" class="w-full">
+                                <input type="file" name="logo" accept="image/png,image/jpeg" class="...">
+                                <p class="text-xs text-gray-500 mt-1">PNG or JPG, max 2MB</p>
                                 @if($company->logo_path)
                                 <img src="{{ asset($company->logo_path) }}" class="mt-2 max-h-16">
                                 @endif
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1">Signature</label>
-                                <input type="file" name="signature" class="w-full">
+                                <input type="file" name="signature" accept="image/png,image/jpeg" class="...">
+                                <p class="text-xs text-gray-500 mt-1">PNG or JPG, max 2MB</p>
                                 @if($company->signature_path)
                                 <img src="{{ asset($company->signature_path) }}" class="mt-2 max-h-16">
                                 @endif

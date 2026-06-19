@@ -9,6 +9,7 @@ use App\Repositories\Contracts\CompanyRepositoryInterface;
 use App\DTOs\CompanyData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class CompanyController extends Controller
 {
@@ -82,8 +83,20 @@ class CompanyController extends Controller
 
     public function update(UpdateCompanyRequest $request, $companyId)
     {
-        $companyData = CompanyData::fromArray($request->validated());
-        $company = $this->companyRepository->update($companyId, $companyData->toArray());
+        $company = $this->companyRepository->findOrFail($companyId);
+
+        // Logo Upload
+        if ($request->hasFile('logo')) {
+            $this->companyRepository->updateLogo($companyId, $request->file('logo'));
+        }
+
+        // Signature Upload
+        if ($request->hasFile('signature')) {
+            $this->companyRepository->updateSignature($companyId, $request->file('signature'));
+        }
+
+        // Update other settings
+        $this->companyRepository->updateSettings($companyId, $request->validated());
 
         return redirect()->route('company.settings')->with('success', 'Company updated successfully!');
     }

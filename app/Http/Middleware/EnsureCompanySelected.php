@@ -10,6 +10,11 @@ class EnsureCompanySelected
 {
     public function handle(Request $request, Closure $next): Response
     {
+
+        // Super Admin bypass
+        if (auth()->check() && auth()->user()->hasRole('super_admin')) {
+            return $next($request);
+        }
         if (
             !session()->has('current_company_id') &&
             auth()->check() &&

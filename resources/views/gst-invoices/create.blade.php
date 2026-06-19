@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 Create GST Invoice
             </h2>
-            <a href="{{ route('gst-invoices.index') }}" class="text-gray-500 hover:text-gray-700">
+            <a href="{{ ('gst-invoices.index') }}" class="text-gray-500 hover:text-gray-700">
                 &larr; Back to GST Invoices
             </a>
         </div>

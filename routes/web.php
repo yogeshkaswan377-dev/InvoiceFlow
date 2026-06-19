@@ -236,4 +236,67 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('profile.destroy');
 });
 
+// ============================================
+// SUPER ADMIN ROUTES
+// ============================================
+Route::middleware(['auth', 'verified', 'super.admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
+
+    // Dashboard
+    Route::get('/dashboard', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('dashboard');
+
+    // Companies
+    Route::get('/companies', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'index'])->name('companies');
+    Route::get('/companies/{company}', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'show'])->name('companies.show');
+    Route::post('/companies/{company}/approve', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'approve'])->name('companies.approve');
+    Route::post('/companies/{company}/suspend', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'suspend'])->name('companies.suspend');
+
+    // Users
+    Route::get('/users', [\App\Http\Controllers\SuperAdmin\UserController::class, 'index'])->name('users');
+    Route::get('/users/{user}', [\App\Http\Controllers\SuperAdmin\UserController::class, 'show'])->name('users.show');
+
+    // Invoices
+    Route::get('/invoices', [\App\Http\Controllers\SuperAdmin\InvoiceController::class, 'index'])->name('invoices');
+    Route::get('/invoices/{invoice}', [\App\Http\Controllers\SuperAdmin\InvoiceController::class, 'show'])->name('invoices.show');
+
+    // Proformas
+    Route::get('/proformas', [\App\Http\Controllers\SuperAdmin\ProformaController::class, 'index'])->name('proformas');
+    Route::get('/proformas/{invoice}', [\App\Http\Controllers\SuperAdmin\ProformaController::class, 'show'])->name('proformas.show');
+
+    // Analytics
+    Route::get('/analytics', [\App\Http\Controllers\SuperAdmin\AnalyticsController::class, 'index'])->name('analytics');
+
+    // Subscriptions
+    Route::get('/subscriptions', [\App\Http\Controllers\SuperAdmin\SubscriptionController::class, 'index'])->name('subscriptions');
+
+    // Logs
+    Route::get('/logs', [\App\Http\Controllers\SuperAdmin\LogController::class, 'index'])->name('logs');
+
+    // Audit
+    Route::get('/audit', [\App\Http\Controllers\SuperAdmin\AuditController::class, 'index'])->name('audit');
+
+    // Profile
+    Route::get('/profile', [\App\Http\Controllers\SuperAdmin\ProfileController::class, 'index'])->name('profile');
+
+    // Company Users
+    Route::get('/companies/{company}/users', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'users'])->name('companies.users');
+
+    // Company Invoices
+    Route::get('/companies/{company}/invoices', [\App\Http\Controllers\SuperAdmin\CompanyController::class, 'invoices'])->name('companies.invoices');
+
+    // Settings
+    Route::get('/settings', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'index'])->name('settings');
+    Route::post('/settings', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'update'])->name('settings.update');
+});
+
+// Staff Invite Routes
+Route::middleware(['auth', 'verified', 'company.selected'])->group(function () {
+    Route::get('/staff/invite', [App\Http\Controllers\StaffController::class, 'inviteForm'])->name('staff.invite.form');
+    Route::post('/staff/invite', [App\Http\Controllers\StaffController::class, 'sendInvite'])->name('staff.invite.send');
+});
+
+// Accept Invite (no company needed)
+Route::get('/invite/{token}', [App\Http\Controllers\StaffController::class, 'acceptInvite'])->name('invite.accept');
+Route::post('/invite/{token}/register', [App\Http\Controllers\StaffController::class, 'registerFromInvite'])->name('invite.register');
+
+require __DIR__ . '/auth.php';
 require __DIR__ . '/auth.php';

@@ -22,9 +22,11 @@ class ClientController extends Controller
     }
 
     public function create()
-    {
-        return view('clients.create');
-    }
+{
+    $states = config('indian_states.states');
+
+    return view('Clients.create', compact('states'));
+}
 
     public function store(Request $request)
     {

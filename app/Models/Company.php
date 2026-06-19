@@ -45,14 +45,24 @@ class Company extends Model
         'gst_mode_default' => 'string',
     ];
 
-    public function users(): HasMany
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function clients()
+    {
+        return $this->hasMany(Client::class);
+    }
+
+    public function users()
     {
         return $this->hasMany(User::class);
     }
 
-    public function clients(): HasMany
+    public function owner()
     {
-        return $this->hasMany(Client::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function getDefaultGstRatesAttribute(): array

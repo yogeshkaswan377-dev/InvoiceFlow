@@ -10,10 +10,10 @@
             <div class="p-6 bg-white border-b border-gray-200">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold">Add New Client</h2>
-                    <a href="{{ route('clients.index') }}" class="text-gray-600 hover:text-gray-900">← Back to Clients</a>
+                    <a href="{{ url('/clients') }}" class="text-gray-600 hover:text-gray-900">← Back to Clients</a>
                 </div>
 
-                <form method="POST" action="{{ route('clients.store') }}" @submit="validateForm">
+                <form method="POST" action="{{ url('/clients') }}" @submit="validateForm">
                     @csrf
 
                     <!-- Client Type Selection -->
@@ -30,7 +30,7 @@
                             </label>
                         </div>
                         @error('client_type')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
@@ -70,10 +70,10 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">GSTIN *</label>
-                                <input type="text" name="gstin" x-model="form.gstin" 
-                                       @blur="validateGSTIN" 
-                                       class="w-full rounded-md border-gray-300 shadow-sm"
-                                       :class="{'border-red-500': gstinError}">
+                                <input type="text" name="gstin" x-model="form.gstin"
+                                    @blur="validateGSTIN"
+                                    class="w-full rounded-md border-gray-300 shadow-sm"
+                                    :class="{'border-red-500': gstinError}">
                                 <p x-show="gstinError" class="text-red-500 text-xs mt-1" x-text="gstinError"></p>
                                 @error('gstin') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
@@ -108,10 +108,17 @@
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">State</label>
-                                    <select name="state_code" x-model="form.state_code" @change="onStateChange" class="w-full rounded-md border-gray-300 shadow-sm">
+                                    <select
+                                        name="state_code"
+                                        x-model="form.state_code"
+                                        @change="onStateChange"
+                                        class="w-full rounded-md border-gray-300 shadow-sm">
                                         <option value="">Select State</option>
-                                        @foreach($states ?? getIndianStates() as $code => $name)
-                                            <option value="{{ $code }}">{{ $name }}</option>
+
+                                        @foreach($states as $code => $name)
+                                        <option value="{{ $code }}">
+                                            {{ $name }}
+                                        </option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -159,7 +166,7 @@
 
                     <!-- Submit Buttons -->
                     <div class="flex justify-end space-x-3 border-t pt-6">
-                        <a href="{{ route('clients.index') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">Cancel</a>
+                        <a href="{{ url('/clients') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">Cancel</a>
                         <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Create Client</button>
                     </div>
                 </form>
@@ -170,94 +177,94 @@
 
 @push('scripts')
 <script>
-function clientForm() {
-    return {
-        clientType: 'business',
-        gstinError: '',
-        form: {
-            name: '',
-            company_name: '',
-            email: '',
-            phone: '',
-            gstin: '',
-            pan: '',
-            address_line_1: '',
-            address_line_2: '',
-            city: '',
-            state_code: '',
-            pincode: '',
-            country: 'India',
-            credit_limit: 0,
-            payment_terms: '',
-            notes: '',
-            is_active: true
-        },
-        
-        init() {
-            // Any initialization logic
-        },
-        
-        onClientTypeChange() {
-            if (this.clientType === 'individual') {
-                this.form.gstin = '';
-                this.form.company_name = '';
-            }
-        },
-        
-        async validateGSTIN() {
-            if (!this.form.gstin) {
+    function clientForm() {
+        return {
+            clientType: 'business',
+            gstinError: '',
+            form: {
+                name: '',
+                company_name: '',
+                email: '',
+                phone: '',
+                gstin: '',
+                pan: '',
+                address_line_1: '',
+                address_line_2: '',
+                city: '',
+                state_code: '',
+                pincode: '',
+                country: 'India',
+                credit_limit: 0,
+                payment_terms: '',
+                notes: '',
+                is_active: true
+            },
+
+            init() {
+                // Any initialization logic
+            },
+
+            onClientTypeChange() {
+                if (this.clientType === 'individual') {
+                    this.form.gstin = '';
+                    this.form.company_name = '';
+                }
+            },
+
+            async validateGSTIN() {
+                if (!this.form.gstin) {
+                    this.gstinError = '';
+                    return;
+                }
+
+                // Client-side validation
+                const gstin = this.form.gstin.toUpperCase();
+                if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[0-9A-Z]{1}[0-9A-Z]{1}$/.test(gstin)) {
+                    this.gstinError = 'Invalid GSTIN format';
+                    return;
+                }
+
+                // Extract state from GSTIN
+                const stateCode = gstin.substring(0, 2);
+                if (stateCode && !this.form.state_code) {
+                    this.form.state_code = stateCode;
+                    this.onStateChange();
+                }
+
                 this.gstinError = '';
-                return;
+            },
+
+            onStateChange() {
+                // Auto-calculate place of supply would happen on server
+                // This is just for UX feedback
+                if (this.form.state_code) {
+                    console.log('State selected:', this.form.state_code);
+                }
+            },
+
+            validateForm(event) {
+                if (this.clientType === 'business' && !this.form.gstin) {
+                    event.preventDefault();
+                    alert('GSTIN is required for business clients');
+                    return false;
+                }
+
+                if (!this.form.name) {
+                    event.preventDefault();
+                    alert('Contact person name is required');
+                    return false;
+                }
+
+                if (this.clientType === 'business' && !this.form.company_name) {
+                    event.preventDefault();
+                    alert('Company name is required for business clients');
+                    return false;
+                }
+
+                return true;
             }
-            
-            // Client-side validation
-            const gstin = this.form.gstin.toUpperCase();
-            if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[0-9A-Z]{1}[0-9A-Z]{1}$/.test(gstin)) {
-                this.gstinError = 'Invalid GSTIN format';
-                return;
-            }
-            
-            // Extract state from GSTIN
-            const stateCode = gstin.substring(0, 2);
-            if (stateCode && !this.form.state_code) {
-                this.form.state_code = stateCode;
-                this.onStateChange();
-            }
-            
-            this.gstinError = '';
-        },
-        
-        onStateChange() {
-            // Auto-calculate place of supply would happen on server
-            // This is just for UX feedback
-            if (this.form.state_code) {
-                console.log('State selected:', this.form.state_code);
-            }
-        },
-        
-        validateForm(event) {
-            if (this.clientType === 'business' && !this.form.gstin) {
-                event.preventDefault();
-                alert('GSTIN is required for business clients');
-                return false;
-            }
-            
-            if (!this.form.name) {
-                event.preventDefault();
-                alert('Contact person name is required');
-                return false;
-            }
-            
-            if (this.clientType === 'business' && !this.form.company_name) {
-                event.preventDefault();
-                alert('Company name is required for business clients');
-                return false;
-            }
-            
-            return true;
         }
     }
-}
 </script>
 @endpush
 @endsection

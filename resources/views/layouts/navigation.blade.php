@@ -12,24 +12,29 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    <x-nav-link :href="url('/dashboard')" :active="request()->is('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('clients.index')" :active="request()->routeIs('clients.*')">
+                    <x-nav-link :href="url('/clients')" :active="request()->is('clients*')">
                         {{ __('Clients') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                    <x-nav-link :href="url('/products')" :active="request()->is('products*')">
                         {{ __('Products') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('proformas.index')" :active="request()->routeIs('proformas.*')">
+                    <x-nav-link :href="url('/proformas')" :active="request()->is('proformas*')">
                         {{ __('Proformas') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('gst-invoices.index')" :active="request()->routeIs('gst-invoices.*')">
+                    <x-nav-link :href="url('/gst-invoices')" :active="request()->is('gst-invoices*')">
                         {{ __('GST Invoices') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('reports.outstanding')" :active="request()->routeIs('reports.*')">
+                    <x-nav-link :href="url('/reports/outstanding')" :active="request()->is('reports*')">
                         {{ __('Reports') }}
                     </x-nav-link>
+                    @if(auth()->user()->hasRole('super_admin'))
+                    <x-nav-link :href="url('/super-admin/dashboard')" :active="request()->is('super-admin*')">
+                        👑 {{ __('Super Admin') }}
+                    </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -52,6 +57,11 @@
                         <x-dropdown-link :href="route('company.settings')">
                             {{ __('Company Settings') }}
                         </x-dropdown-link>
+                        @if(auth()->user()->hasAnyRole(['owner', 'admin']))
+                        <x-nav-link :href="route('staff.invite.form')" :active="request()->routeIs('staff.*')">
+                            👥 Invite Staff
+                        </x-nav-link>
+                        @endif
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
@@ -85,24 +95,29 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+            <x-responsive-nav-link :href="url('/dashboard')" :active="request()->is('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('clients.index')" :active="request()->routeIs('clients.*')">
+            <x-responsive-nav-link :href="url('/clients')" :active="request()->is('clients*')">
                 {{ __('Clients') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+            <x-responsive-nav-link :href="url('/products')" :active="request()->is('products*')">
                 {{ __('Products') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('proformas.index')" :active="request()->routeIs('proformas.*')">
+            <x-responsive-nav-link :href="url('/proformas')" :active="request()->is('proformas*')">
                 {{ __('Proformas') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('gst-invoices.index')" :active="request()->routeIs('gst-invoices.*')">
+            <x-responsive-nav-link :href="url('/gst-invoices')" :active="request()->is('gst-invoices*')">
                 {{ __('GST Invoices') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('reports.outstanding')" :active="request()->routeIs('reports.*')">
+            <x-responsive-nav-link :href="url('/reports/outstanding')" :active="request()->is('reports*')">
                 {{ __('Reports') }}
             </x-responsive-nav-link>
+            @if(auth()->user()->hasRole('super_admin'))
+            <x-responsive-nav-link :href="url('/super-admin/dashboard')" :active="request()->is('super-admin*')">
+                👑 {{ __('Super Admin') }}
+            </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
