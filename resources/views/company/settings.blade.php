@@ -1,113 +1,158 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Company Settings</h2>
-    </x-slot>
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            @if(session('success'))
-            <div class="bg-green-100 text-green-800 p-4 rounded-lg mb-4">{{ session('success') }}</div>
-            @endif
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <form action="{{ route('company.update', $company) }}" method="POST" enctype="multipart/form-data">
-                        @csrf @method('PUT')
-                        <h3 class="text-lg font-semibold mb-4">Basic Information</h3>
-                        <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Company Name</label>
-                                <input type="text" name="name" value="{{ $company->name }}" class="w-full rounded-md border-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Email</label>
-                                <input type="email" name="email" value="{{ $company->email }}" class="w-full rounded-md border-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Phone</label>
-                                <input type="text" name="phone" value="{{ $company->phone }}" class="w-full rounded-md border-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">GSTIN</label>
-                                <input type="text" name="gstin" value="{{ $company->gstin }}" class="w-full rounded-md border-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">PAN</label>
-                                <input type="text" name="pan" value="{{ $company->pan }}" class="w-full rounded-md border-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">State</label>
-                                <input type="text" name="state" value="{{ $company->state }}" class="w-full rounded-md border-gray-300">
-                            </div>
-                        </div>
-                        <h3 class="text-lg font-semibold mb-4">Address</h3>
-                        <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div class="col-span-2">
-                                <label class="block text-sm font-medium mb-1">Address</label>
-                                <input type="text" name="address_line_1" value="{{ $company->address_line_1 }}" class="w-full rounded-md border-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">City</label>
-                                <input type="text" name="city" value="{{ $company->city }}" class="w-full rounded-md border-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Pincode</label>
-                                <input type="text" name="pincode" value="{{ $company->pincode }}" class="w-full rounded-md border-gray-300">
-                            </div>
-                        </div>
-                        <h3 class="text-lg font-semibold mb-4 mt-6 pt-4 border-t">GST Settings</h3>
-                        <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Default GST Mode</label>
-                                <select name="gst_mode_default" class="w-full rounded-md border-gray-300">
-                                    <option value="exclusive" {{ ($company->gst_mode_default ?? '') === 'exclusive' ? 'selected' : '' }}>Exclusive (GST extra)</option>
-                                    <option value="inclusive" {{ ($company->gst_mode_default ?? '') === 'inclusive' ? 'selected' : '' }}>Inclusive (GST included)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Invoice Prefix</label>
-                                <input type="text" name="invoice_prefix" value="{{ $company->invoice_prefix ?? 'INV-' }}" class="w-full rounded-md border-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Quote Prefix</label>
-                                <input type="text" name="quote_prefix" value="{{ $company->quote_prefix ?? 'QUO-' }}" class="w-full rounded-md border-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Default Payment Terms (days)</label>
-                                <input type="number" name="default_payment_terms" value="{{ $company->default_payment_terms ?? 15 }}" class="w-full rounded-md border-gray-300">
-                            </div>
-                        </div>
+@extends('layouts.app')
 
-                        {{-- GST Rates (hidden - to pass validation) --}}
-                        <input type="hidden" name="gst_rates[0][rate]" value="18">
-                        <input type="hidden" name="gst_rates[0][cgst]" value="9">
-                        <input type="hidden" name="gst_rates[0][sgst]" value="9">
-                        <input type="hidden" name="gst_rates[0][igst]" value="18">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium mb-1">Default Invoice Terms & Conditions</label>
-                            <textarea name="invoice_terms" rows="4" class="w-full rounded-md border-gray-300">{{ $company->invoice_terms ?? '' }}</textarea>
+@section('title', 'Company Settings - GST Billing Pro')
+@section('meta_description', 'Manage your company profile, GST details, bank information and invoice preferences.')
+
+@section('content')
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+        <h2 style="font-size:18px; font-weight:700; margin:0;">Company Settings</h2>
+        <p style="color:#64748b; font-size:12px; margin:4px 0 0;">Manage your business profile & preferences</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        {{-- Company Profile --}}
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-building me-2 text-primary"></i>Company Profile</h5>
+
+                <form action="{{ route('company.settings.update') }}" method="POST">
+                    @csrf @method('PUT')
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">Company Name *</label>
+                            <input type="text" name="name" value="{{ old('name', $company->name ?? '') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" required>
                         </div>
-                        <h3 class="text-lg font-semibold mb-4">Logo & Signature</h3>
-                        <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Logo</label>
-                                <input type="file" name="logo" accept="image/png,image/jpeg" class="...">
-                                <p class="text-xs text-gray-500 mt-1">PNG or JPG, max 2MB</p>
-                                @if($company->logo_path)
-                                <img src="{{ asset($company->logo_path) }}" class="mt-2 max-h-16">
-                                @endif
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Signature</label>
-                                <input type="file" name="signature" accept="image/png,image/jpeg" class="...">
-                                <p class="text-xs text-gray-500 mt-1">PNG or JPG, max 2MB</p>
-                                @if($company->signature_path)
-                                <img src="{{ asset($company->signature_path) }}" class="mt-2 max-h-16">
-                                @endif
-                            </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">Trade Name</label>
+                            <input type="text" name="trade_name" value="{{ old('trade_name', $company->trade_name ?? '') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
                         </div>
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg">Save Settings</button>
-                    </form>
-                </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">Email</label>
+                            <input type="email" name="email" value="{{ old('email', $company->email ?? '') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">Phone</label>
+                            <input type="text" name="phone" value="{{ old('phone', $company->phone ?? '') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" style="font-size:13px;">Address</label>
+                            <textarea name="address" rows="2" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">{{ old('address', $company->address ?? '') }}</textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="city" value="{{ old('city', $company->city ?? '') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" placeholder="City">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="state" value="{{ old('state', $company->state ?? '') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" placeholder="State">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="pincode" value="{{ old('pincode', $company->pincode ?? '') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" placeholder="Pincode">
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn text-white" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:12px; padding:10px 24px; font-weight:600;">
+                            <i class="fas fa-save me-2"></i> Save Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {{-- GST Settings --}}
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-percent me-2 text-success"></i>GST Configuration</h5>
+
+                <form action="{{ route('company.gst.update') }}" method="POST">
+                    @csrf @method('PUT')
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">GSTIN *</label>
+                            <input type="text" name="gstin" value="{{ old('gstin', $company->gstin ?? '') }}" class="form-control text-uppercase" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" placeholder="22AAAAA0000A1Z5" maxlength="15" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">PAN</label>
+                            <input type="text" name="pan" value="{{ old('pan', $company->pan ?? '') }}" class="form-control text-uppercase" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" placeholder="AAAAA0000A" maxlength="10">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">Default GST Rate (%)</label>
+                            <select name="default_gst_rate" class="form-select" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                                @foreach([0,5,12,18,28] as $rate)
+                                <option value="{{ $rate }}" {{ ($company->default_gst_rate ?? 18) == $rate ? 'selected' : '' }}>{{ $rate }}%</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">Tax Mode</label>
+                            <select name="gst_mode" class="form-select" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                                <option value="exclusive" {{ ($company->gst_mode ?? 'exclusive') == 'exclusive' ? 'selected' : '' }}>Tax Exclusive</option>
+                                <option value="inclusive" {{ ($company->gst_mode ?? '') == 'inclusive' ? 'selected' : '' }}>Tax Inclusive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn text-white" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:12px; padding:10px 24px; font-weight:600;">
+                            <i class="fas fa-save me-2"></i> Save GST Settings
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</x-app-layout>
+
+    <div class="col-lg-4">
+        {{-- Invoice Preferences --}}
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-cog me-2 text-info"></i>Invoice Preferences</h5>
+
+                <form action="{{ route('company.preferences.update') }}" method="POST">
+                    @csrf @method('PUT')
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Invoice Prefix</label>
+                        <input type="text" name="invoice_prefix" value="{{ old('invoice_prefix', $company->invoice_prefix ?? 'INV') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Proforma Prefix</label>
+                        <input type="text" name="proforma_prefix" value="{{ old('proforma_prefix', $company->proforma_prefix ?? 'PRO') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Default Payment Terms</label>
+                        <select name="payment_terms" class="form-select" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                            @foreach(['Net 7','Net 15','Net 30','Net 45','Due on Receipt'] as $term)
+                            <option value="{{ $term }}" {{ ($company->payment_terms ?? 'Net 15') == $term ? 'selected' : '' }}>{{ $term }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" name="show_hsn_sac" value="1" {{ ($company->show_hsn_sac ?? true) ? 'checked' : '' }} class="form-check-input">
+                        <label class="form-check-label" style="font-size:13px;">Show HSN/SAC in invoices</label>
+                    </div>
+
+                    <button type="submit" class="btn text-white w-100" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:12px; padding:12px; font-weight:600;">
+                        <i class="fas fa-save me-2"></i> Save Preferences
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {{-- Danger Zone --}}
+        <div class="card border-danger rounded-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Danger Zone</h5>
+                <p style="font-size:12px; color:#64748b;">Delete your company and all associated data. This action cannot be undone.</p>
+                <button class="btn btn-outline-danger w-100" style="border-radius:10px;" onclick="return confirm('Are you absolutely sure?')">
+                    <i class="fas fa-trash me-2"></i> Delete Company
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

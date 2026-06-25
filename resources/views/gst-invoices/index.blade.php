@@ -1,88 +1,103 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                GST Invoices
-            </h2>
-            <a href="{{ url('gst-invoices/create') }}"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
-                + New GST Invoice
-            </a>
-        </div>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+@section('title', 'GST Invoices - GST Billing Pro')
+@section('meta_description', 'View, search and manage all your GST invoices. Filter by status, date, and client.')
 
-            @if(isset($invoices) && method_exists($invoices, 'count') && $invoices->count() > 0)
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice #</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">GST</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @foreach($invoices as $invoice)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="px-4 py-3 text-sm font-medium text-blue-600">
-                                        <a href="{{ url('gst-invoices/show', $invoice->id) }}" class="hover:underline">
-                                            {{ $invoice->invoice_number }}
-                                        </a>
-                                    </td>
-                                    {{ optional($invoice->client)->name ?? 'N/A' }}
-                                    <td class="px-4 py-3 text-sm text-gray-500">{{ $invoice->invoice_date->format('d M Y') }}</td>
-                                    <td class="px-4 py-3 text-sm text-right font-medium">₹{{ number_format($invoice->grand_total, 2) }}</td>
-                                    <td class="px-4 py-3 text-sm text-center">
-                                        <span class="text-xs px-2 py-1 rounded {{ $invoice->igst_amount > 0 ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' }}">
-                                            {{ $invoice->igst_amount > 0 ? 'IGST' : 'CGST+SGST' }} ₹{{ number_format($invoice->total_gst_amount, 2) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-3 text-sm">
-                                        <span class="px-2 py-1 text-xs rounded-full 
-                                                    @if($invoice->status === 'draft') bg-gray-100 text-gray-800
-                                                    @elseif($invoice->status === 'sent') bg-blue-100 text-blue-800
-                                                    @elseif($invoice->status === 'paid') bg-green-100 text-green-800
-                                                    @else bg-gray-100 text-gray-800
-                                                    @endif">
-                                            {{ ucfirst($invoice->status) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-3 text-sm text-right space-x-2">
-                                        <a href="{{ url('gst-invoices', $invoice->id) }}" class="text-blue-600 hover:text-blue-900">View</a>
-                                        @if($invoice->isEditable())
-                                        <a href="{{ url('gst-invoices/edit', $invoice->id) }}" class="text-yellow-600 hover:text-yellow-900">Edit</a>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-4">
-                        {{ $invoices->links() }}
-                    </div>
-                </div>
+@section('content')
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+        <h2 style="font-size:18px; font-weight:700; margin:0;">GST Invoices</h2>
+        <p style="color:#64748b; font-size:12px; margin:4px 0 0;">Manage your tax invoices & bill of supply</p>
+    </div>
+    <a href="{{ route('gst-invoices.create') }}" class="btn text-white" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:12px; padding:10px 20px; font-weight:600; text-decoration:none;">
+        <i class="fas fa-plus-circle me-2"></i> Create Invoice
+    </a>
+</div>
+
+{{-- Filters --}}
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-3">
+        <form method="GET" action="{{ route('gst-invoices.index') }}" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold" style="font-size:12px;">Search</label>
+                <input type="search" name="search" value="{{ request('search') }}" class="form-control" style="border-radius:10px; border:1px solid #e2e8f0; padding:9px 14px;" placeholder="Invoice # or client...">
             </div>
-            @else
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-center py-12">
-                    <p class="text-gray-500 text-lg mb-4">No GST invoices found</p>
-                    <a href="{{ route('gst-invoices.create') }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg">
-                        Create Your First GST Invoice
-                    </a>
-                </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold" style="font-size:12px;">Status</label>
+                <select name="status" class="form-select" style="border-radius:10px; border:1px solid #e2e8f0;" onchange="this.form.submit()">
+                    <option value="">All Status</option>
+                    <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Paid</option>
+                    <option value="sent" {{ request('status') == 'sent' ? 'selected' : '' }}>Pending</option>
+                    <option value="overdue" {{ request('status') == 'overdue' ? 'selected' : '' }}>Overdue</option>
+                    <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                </select>
             </div>
-            @endif
+            <div class="col-md-2">
+                <label class="form-label fw-semibold" style="font-size:12px;">From</label>
+                <input type="date" name="from" value="{{ request('from') }}" class="form-control" style="border-radius:10px; border:1px solid #e2e8f0;">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold" style="font-size:12px;">To</label>
+                <input type="date" name="to" value="{{ request('to') }}" class="form-control" style="border-radius:10px; border:1px solid #e2e8f0;">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn text-white w-100" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:10px; font-weight:600;">
+                    <i class="fas fa-filter me-1"></i> Apply
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
+{{-- Invoices Table --}}
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="text-muted" style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; background:#f8fafc;">
+                    <tr>
+                        <th class="ps-4">Invoice #</th>
+                        <th>Client</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($invoices ?? [] as $invoice)
+                    <tr>
+                        <td class="ps-4 fw-semibold">{{ $invoice->invoice_number }}</td>
+                        <td>{{ $invoice->client->name ?? 'N/A' }}</td>
+                        <td>{{ $invoice->invoice_date?->format('d M Y') }}</td>
+                        <td class="fw-bold">₹{{ number_format($invoice->grand_total ?? 0) }}</td>
+                        <td>
+                            <span class="badge-status badge-{{ $invoice->status === 'paid' ? 'paid' : ($invoice->status === 'overdue' ? 'overdue' : ($invoice->status === 'draft' ? 'draft' : 'pending')) }}">
+                                {{ ucfirst($invoice->status) }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{{ route('gst-invoices.show', $invoice) }}" class="btn btn-sm" style="background:#dbeafe; color:#1d4ed8; border-radius:8px; font-size:11px;">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ route('gst-invoices.edit', $invoice) }}" class="btn btn-sm" style="background:#fef3c7; color:#92400e; border-radius:8px; font-size:11px;">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="fas fa-file-invoice fa-2x d-block mb-2 opacity-25"></i>
+                            No invoices found. <a href="{{ route('gst-invoices.create') }}">Create your first invoice</a>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
-</x-app-layout>
+</div>
+@endsection

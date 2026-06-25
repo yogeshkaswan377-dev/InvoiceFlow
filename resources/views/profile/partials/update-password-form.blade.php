@@ -1,48 +1,37 @@
-<section>
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Update Password') }}
-        </h2>
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-4"><i class="fas fa-lock me-2 text-warning"></i>Update Password</h5>
 
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __('Ensure your account is using a long, random password to stay secure.') }}
-        </p>
-    </header>
+        <form action="{{ route('password.update') }}" method="POST">
+            @csrf @method('PUT')
 
-    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
-        @csrf
-        @method('put')
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" style="font-size:13px;">Current Password *</label>
+                    <input type="password" name="current_password" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" required>
+                    <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-1" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" style="font-size:13px;">New Password *</label>
+                    <input type="password" name="password" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" required>
+                    <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-1" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" style="font-size:13px;">Confirm Password *</label>
+                    <input type="password" name="password_confirmation" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" required>
+                </div>
+            </div>
 
-        <div>
-            <x-input-label for="update_password_current_password" :value="__('Current Password')" />
-            <x-text-input id="update_password_current_password" name="current_password" type="password" class="mt-1 block w-full" autocomplete="current-password" />
-            <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
-        </div>
-
-        <div>
-            <x-input-label for="update_password_password" :value="__('New Password')" />
-            <x-text-input id="update_password_password" name="password" type="password" class="mt-1 block w-full" autocomplete="new-password" />
-            <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
-        </div>
-
-        <div>
-            <x-input-label for="update_password_password_confirmation" :value="__('Confirm Password')" />
-            <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" autocomplete="new-password" />
-            <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
-
-            @if (session('status') === 'password-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600"
-                >{{ __('Saved.') }}</p>
-            @endif
-        </div>
-    </form>
-</section>
+            <div class="mt-4">
+                <button type="submit" class="btn text-white" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:12px; padding:10px 24px; font-weight:600;">
+                    <i class="fas fa-key me-2"></i> Update Password
+                </button>
+                @if(session('status') === 'password-updated')
+                <span class="text-success ms-2" style="font-size:13px;">
+                    <i class="fas fa-check-circle me-1"></i> Updated!
+                </span>
+                @endif
+            </div>
+        </form>
+    </div>
+</div>

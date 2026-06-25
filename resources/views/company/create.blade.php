@@ -1,115 +1,80 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Create Company') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <form method="POST" action="{{ route('company.store') }}">
-                        @csrf
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Basic Information -->
-                            <div>
-                                <h3 class="font-bold mb-4">Basic Information</h3>
-                                
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium mb-1">Company Name *</label>
-                                    <input type="text" name="name" value="{{ old('name') }}" required
-                                           class="w-full rounded-md border-gray-300 shadow-sm">
-                                    @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium mb-1">Email</label>
-                                    <input type="email" name="email" value="{{ old('email') }}"
-                                           class="w-full rounded-md border-gray-300 shadow-sm">
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium mb-1">Phone</label>
-                                    <input type="text" name="phone" value="{{ old('phone') }}"
-                                           class="w-full rounded-md border-gray-300 shadow-sm">
-                                </div>
-                            </div>
-                            
-                            <!-- Tax Information -->
-                            <div>
-                                <h3 class="font-bold mb-4">Tax Information</h3>
-                                
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium mb-1">GSTIN (15 characters)</label>
-                                    <input type="text" name="gstin" value="{{ old('gstin') }}" maxlength="15"
-                                           class="w-full rounded-md border-gray-300 shadow-sm uppercase">
-                                    <p class="text-xs text-gray-500 mt-1">Format: 27ABCDE1234F1Z5</p>
-                                    @error('gstin') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium mb-1">PAN (10 characters)</label>
-                                    <input type="text" name="pan" value="{{ old('pan') }}" maxlength="10"
-                                           class="w-full rounded-md border-gray-300 shadow-sm uppercase">
-                                    @error('pan') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                                </div>
-                            </div>
-                            
-                            <!-- Address -->
-                            <div class="md:col-span-2">
-                                <h3 class="font-bold mb-4">Address</h3>
-                                
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium mb-1">Address Line 1</label>
-                                    <input type="text" name="address_line1" value="{{ old('address_line1') }}"
-                                           class="w-full rounded-md border-gray-300 shadow-sm">
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium mb-1">Address Line 2</label>
-                                    <input type="text" name="address_line2" value="{{ old('address_line2') }}"
-                                           class="w-full rounded-md border-gray-300 shadow-sm">
-                                </div>
-                                
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium mb-1">City</label>
-                                        <input type="text" name="city" value="{{ old('city') }}"
-                                               class="w-full rounded-md border-gray-300 shadow-sm">
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="block text-sm font-medium mb-1">State</label>
-                                        <input type="text" name="state" value="{{ old('state') }}"
-                                               class="w-full rounded-md border-gray-300 shadow-sm">
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="block text-sm font-medium mb-1">State Code</label>
-                                        <input type="text" name="state_code" value="{{ old('state_code') }}" maxlength="2"
-                                               class="w-full rounded-md border-gray-300 shadow-sm uppercase"
-                                               placeholder="27">
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="block text-sm font-medium mb-1">Pincode</label>
-                                        <input type="text" name="pincode" value="{{ old('pincode') }}" maxlength="6"
-                                               class="w-full rounded-md border-gray-300 shadow-sm">
-                                    </div>
-                                </div>
-                            </div>
+@section('title', 'Create Company - GST Billing Pro')
+@section('meta_description', 'Register a new company with GST details and invoice preferences.')
+
+@section('content')
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ route('company.switch') }}" class="btn btn-sm" style="background:#f1f5f9; border-radius:10px; color:#64748b;">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <h2 style="font-size:18px; font-weight:700; margin:0;">Add New Company</h2>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-building me-2 text-primary"></i>Company Details</h5>
+
+                <form action="{{ route('company.store') }}" method="POST">
+                    @csrf
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">Company Name *</label>
+                            <input type="text" name="name" value="{{ old('name') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" required>
                         </div>
-                        
-                        <div class="mt-6 flex justify-end">
-                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                                Create Company
-                            </button>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">GSTIN *</label>
+                            <input type="text" name="gstin" value="{{ old('gstin') }}" class="form-control text-uppercase" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" placeholder="22AAAAA0000A1Z5" maxlength="15" required>
                         </div>
-                    </form>
-                </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">Email</label>
+                            <input type="email" name="email" value="{{ old('email') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:13px;">Phone</label>
+                            <input type="text" name="phone" value="{{ old('phone') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" style="font-size:13px;">Address</label>
+                            <textarea name="address" rows="2" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">{{ old('address') }}</textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="city" value="{{ old('city') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" placeholder="City">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="state" value="{{ old('state') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" placeholder="State">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="pincode" value="{{ old('pincode') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" placeholder="Pincode">
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn text-white" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:12px; padding:12px 30px; font-weight:600;">
+                            <i class="fas fa-check-circle me-2"></i> Create Company
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</x-app-layout>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3"><i class="fas fa-info-circle me-2"></i>Why Add Company?</h5>
+                <ul style="font-size:13px; color:#475569; line-height:2; padding-left:20px;">
+                    <li>Manage multiple businesses</li>
+                    <li>Separate invoice numbering</li>
+                    <li>Different GSTIN per company</li>
+                    <li>Isolated client databases</li>
+                    <li>Easy switch between companies</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

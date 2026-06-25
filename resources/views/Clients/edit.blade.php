@@ -1,145 +1,249 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Edit Client: {{ $client->name }}
-            </h2>
-            <a href="{{ route('clients.index') }}" class="text-gray-500 hover:text-gray-700 text-sm">
-                &larr; Back to Clients
-            </a>
-        </div>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            
-            @if(session('success'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded">{{ session('success') }}</div>
-            @endif
+@section('title', 'Edit Client - ' . $client->name)
+@section('meta_description', 'Update client details, GSTIN, address and contact information.')
 
-            <form action="{{ route('clients.update', $client) }}" method="POST">
-                @csrf @method('PUT')
+@section('content')
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ route('clients.index') }}" class="btn btn-sm" style="background:#f1f5f9; border-radius:10px; color:#64748b;">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <h2 style="font-size:18px; font-weight:700; margin:0;">Edit: {{ $client->name }}</h2>
+</div>
 
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Basic Information</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Client Type *</label>
-                                <select name="client_type" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                    <option value="business" {{ $client->client_type === 'business' ? 'selected' : '' }}>Business</option>
-                                    <option value="individual" {{ $client->client_type === 'individual' ? 'selected' : '' }}>Individual</option>
-                                    <option value="export" {{ $client->client_type === 'export' ? 'selected' : '' }}>Export</option>
-                                </select>
-                                @error('client_type') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name *</label>
-                                <input type="text" name="name" value="{{ old('name', $client->name) }}" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" required>
-                                @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company Name</label>
-                                <input type="text" name="company_name" value="{{ old('company_name', $client->company_name) }}" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                                <input type="email" name="email" value="{{ old('email', $client->email) }}" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
-                                <input type="text" name="phone" value="{{ old('phone', $client->phone) }}" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-                                <select name="status" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                    <option value="active" {{ $client->status === 'active' ? 'selected' : '' }}>Active</option>
-                                    <option value="inactive" {{ $client->status === 'inactive' ? 'selected' : '' }}>Inactive</option>
-                                </select>
-                            </div>
-                        </div>
+<form action="{{ route('clients.update', $client) }}" method="POST" class="row g-4">
+    @csrf @method('PUT')
+
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-user-edit me-2 text-primary"></i>Client Information</h5>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Full Name *</label>
+                        <input type="text" name="name" value="{{ old('name', $client->name) }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Company Name</label>
+                        <input type="text" name="company_name" value="{{ old('company_name', $client->company_name) }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Email</label>
+                        <input type="email" name="email" value="{{ old('email', $client->email) }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Phone</label>
+                        <input type="text" name="phone" value="{{ old('phone', $client->phone) }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:13px;">GSTIN</label>
+                        <input type="text" name="gstin" value="{{ old('gstin', $client->gstin) }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px; text-transform:uppercase;" maxlength="15">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:13px;">PAN</label>
+                        <input type="text" name="pan" value="{{ old('pan', $client->pan) }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px; text-transform:uppercase;" maxlength="10">
                     </div>
                 </div>
-
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">GST & Tax Information</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GSTIN</label>
-                                <input type="text" name="gstin" value="{{ old('gstin', $client->gstin) }}" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" maxlength="15">
-                                @error('gstin') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">PAN</label>
-                                <input type="text" name="pan" value="{{ old('pan', $client->pan) }}" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" maxlength="10">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State *</label>
-                                <input type="text" name="state" value="{{ old('state', $client->state) }}" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State Code</label>
-                                <input type="text" name="state_code" value="{{ old('state_code', $client->state_code) }}" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" maxlength="2">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Place of Supply</label>
-                                <input type="text" value="{{ $client->place_of_supply }}" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 bg-gray-100" readonly>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Terms</label>
-                                <select name="payment_terms" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                    <option value="">Default</option>
-                                    <option value="Net 7" {{ $client->payment_terms === 'Net 7' ? 'selected' : '' }}>Net 7</option>
-                                    <option value="Net 15" {{ $client->payment_terms === 'Net 15' ? 'selected' : '' }}>Net 15</option>
-                                    <option value="Net 30" {{ $client->payment_terms === 'Net 30' ? 'selected' : '' }}>Net 30</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Address</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address Line 1</label>
-                                <input type="text" name="address_line_1" value="{{ old('address_line_1', $client->address_line_1) }}" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address Line 2</label>
-                                <input type="text" name="address_line_2" value="{{ old('address_line_2', $client->address_line_2) }}" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
-                                <input type="text" name="city" value="{{ old('city', $client->city) }}" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pincode</label>
-                                <input type="text" name="pincode" value="{{ old('pincode', $client->pincode) }}" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Additional Info</h3>
-                        <div class="grid grid-cols-1 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
-                                <textarea name="notes" rows="3" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">{{ old('notes', $client->notes) }}</textarea>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-4">
-                    <a href="{{ route('clients.show', $client) }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-lg">Cancel</a>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">Update Client</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
-</x-app-layout>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-map-marker-alt me-2 text-danger"></i>Address</h5>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:13px;">Address</label>
+                    <textarea name="address_line_1" rows="2" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">{{ old('address_line_1', $client->address_line_1) }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:13px;">City</label>
+                    <input type="text" name="city" value="{{ old('city', $client->city) }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                </div>
+                <div class="row g-2">
+                    <div class="row g-3">
+
+                        <!-- State -->
+                        <div
+                            class="col-6 position-relative"
+                            x-data="stateSearch()">
+
+                            <label
+                                class="form-label fw-semibold mb-2"
+                                style="font-size:13px;">
+                                State *
+                            </label>
+
+                            <!-- Hidden -->
+                            <input
+                                type="hidden"
+                                name="state_name"
+                                :value="selectedState?.name || ''">
+
+                            <input
+                                type="hidden"
+                                name="state_code"
+                                :value="selectedState?.code || ''">
+
+                            <!-- Search -->
+                            <div class="position-relative">
+
+                                <input
+                                    type="text"
+                                    x-model="search"
+                                    @focus="showDropdown=true"
+                                    @input="showDropdown=true"
+
+                                    placeholder="Search state or code"
+
+                                    class="form-control"
+
+                                    style="
+                    height:48px;
+                    border-radius:14px;
+                    padding-left:42px;
+                    border:1px solid #dbe4f0;
+                    background:#fff;
+                "
+
+                                    autocomplete="off"
+                                    required>
+
+                                <i
+                                    class="fas fa-location-dot"
+                                    style="
+                    position:absolute;
+                    left:14px;
+                    top:50%;
+                    transform:translateY(-50%);
+                    color:#94a3b8;
+                ">
+                                </i>
+
+                            </div>
+
+                            <!-- Dropdown -->
+                            <div
+                                x-show="showDropdown"
+                                x-transition
+                                @click.outside="showDropdown=false"
+
+                                class="shadow-lg border-0 mt-2"
+
+                                style="
+                position:absolute;
+                width:100%;
+                background:white;
+                border-radius:14px;
+                overflow:hidden;
+                max-height:260px;
+                overflow-y:auto;
+                z-index:999;
+            ">
+
+                                <template
+                                    x-for="state in filteredStates"
+                                    :key="state.code">
+
+                                    <div
+                                        @click="selectState(state)"
+
+                                        style="
+                        padding:14px 16px;
+                        cursor:pointer;
+                        border-bottom:1px solid #f1f5f9;
+                    "
+
+                                        onmouseover="
+                        this.style.background='#f8fafc'
+                    "
+
+                                        onmouseout="
+                        this.style.background='white'
+                    ">
+
+                                        <div
+                                            class="d-flex
+                        justify-content-between
+                        align-items-center">
+
+                                            <span
+                                                class="fw-semibold"
+                                                x-text="state.name">
+                                            </span>
+
+                                            <span
+                                                class="badge"
+                                                style="
+                                background:#eff6ff;
+                                color:#2563eb;
+                                border-radius:10px;
+                            "
+                                                x-text="state.code">
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </template>
+
+                                <div
+                                    x-show="filteredStates.length===0"
+                                    class="text-center p-3 text-muted">
+
+                                    No state found
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Pincode -->
+                        <div class="col-6">
+
+                            <label
+                                class="form-label fw-semibold mb-2"
+                                style="font-size:13px;">
+
+                                Pincode
+
+                            </label>
+
+                            <input
+                                type="text"
+                                name="pincode"
+
+                                value="{{ old('pincode') }}"
+
+                                class="form-control"
+
+                                placeholder="380001"
+
+                                style="
+                height:48px;
+                border-radius:14px;
+                border:1px solid #dbe4f0;
+                padding:0 16px;
+            ">
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {{-- Hidden Required Fields --}}
+            <input type="hidden" name="client_type" value="{{ $client->client_type ?? 'business' }}">
+            <input type="hidden" name="country" value="{{ $client->country ?? 'India' }}">
+            <input type="hidden" name="is_active" value="{{ $client->is_active ?? 1 }}">
+        </div>
+
+        <button type="submit" class="btn text-white w-100" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:12px; padding:14px; font-weight:600;">
+            <i class="fas fa-save me-2"></i> Update Client
+        </button>
+    </div>
+</form>
+@endsection

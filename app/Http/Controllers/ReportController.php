@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -25,32 +26,33 @@ class ReportController extends Controller
 
     public function exportCsv(Request $request)
     {
-        $companyId = Auth::user()->current_company_id;
+        $companyId = session('current_company_id') ?? auth()->user()->current_company_id;
+        $from = $request->from ?? now()->startOfMonth()->format('Y-m-d');
+        $to = $request->to ?? now()->format('Y-m-d');
+
         $invoices = Invoice::where('company_id', $companyId)
-            ->when($request->type, fn($q) => $q->where('invoice_type', $request->type))
-            ->when($request->date_from, fn($q) => $q->where('invoice_date', '>=', $request->date_from))
-            ->when($request->date_to, fn($q) => $q->where('invoice_date', '<=', $request->date_to))
-            ->with('client')
+            ->whereBetween('invoice_date', [$from, $to])
             ->get();
 
-        $filename = 'invoices-export-' . now()->format('Y-m-d') . '.csv';
-        $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => 'attachment; filename=' . $filename];
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="gstr1-report.csv"',
+        ];
 
         $callback = function () use ($invoices) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['Invoice #', 'Type', 'Client', 'Date', 'Due Date', 'Subtotal', 'GST', 'Total', 'Balance', 'Status']);
-            foreach ($invoices as $invoice) {
+            fputcsv($file, ['Invoice #', 'Client', 'Date', 'Taxable Value', 'IGST', 'CGST', 'SGST', 'Total']);
+
+            foreach ($invoices as $inv) {
                 fputcsv($file, [
-                    $invoice->invoice_number,
-                    $invoice->invoice_type,
-                    $invoice->client->name ?? '',
-                    $invoice->invoice_date->format('Y-m-d'),
-                    $invoice->due_date->format('Y-m-d'),
-                    $invoice->subtotal,
-                    $invoice->total_gst_amount,
-                    $invoice->grand_total,
-                    $invoice->balance_due,
-                    $invoice->status,
+                    $inv->invoice_number,
+                    $inv->client->name ?? 'N/A',
+                    $inv->invoice_date->format('d/m/Y'),
+                    $inv->taxable_amount,
+                    $inv->igst_amount,
+                    $inv->cgst_amount,
+                    $inv->sgst_amount,
+                    $inv->grand_total,
                 ]);
             }
             fclose($file);
@@ -58,34 +60,58 @@ class ReportController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
-
     public function gstr1(Request $request)
     {
-        $companyId = Auth::user()->current_company_id;
-        $month = $request->month ?? now()->month;
-        $year = $request->year ?? now()->year;
+        $companyId = session('current_company_id') ?? auth()->user()->current_company_id;
+
+        $from = $request->from ?? now()->startOfMonth()->format('Y-m-d');
+        $to = $request->to ?? now()->format('Y-m-d');
 
         $invoices = Invoice::where('company_id', $companyId)
-            ->where('invoice_type', 'gst_invoice')
-            ->whereYear('invoice_date', $year)
-            ->whereMonth('invoice_date', $month)
-            ->with('client', 'items')
+            ->whereBetween('invoice_date', [$from, $to])
+            ->whereIn('status', ['paid', 'sent', 'accepted'])
             ->get();
 
         $summary = [
-            'b2b' => $invoices->where('client.client_type', 'business'),
-            'b2c' => $invoices->where('client.client_type', 'individual'),
             'total_invoices' => $invoices->count(),
-            'total_value' => $invoices->sum('grand_total'),
+            'taxable_value' => $invoices->sum('taxable_amount'),
             'total_gst' => $invoices->sum('total_gst_amount'),
-            'total_igst' => $invoices->sum('igst_amount'),
-            'total_cgst' => $invoices->sum('cgst_amount'),
-            'total_sgst' => $invoices->sum('sgst_amount'),
-            'month' => $month,
-            'year' => $year,
+            'hsn_count' => $invoices->pluck('items')->flatten()->pluck('hsn_code')->unique()->count(),
         ];
 
-        return view('reports.gstr1', compact('summary', 'month', 'year'));
+        // HSN Summary grouping
+        $hsnSummary = DB::table('invoice_items')
+            ->join('invoices', 'invoice_items.invoice_id', '=', 'invoices.id')
+            ->where('invoices.company_id', $companyId)
+            ->whereBetween('invoices.invoice_date', [$from, $to])
+            ->select(
+                'invoice_items.hsn_sac_code',  // 👈 hsn_code → hsn_sac_code
+                DB::raw('SUM(invoice_items.quantity) as total_qty'),
+                DB::raw('SUM(invoice_items.taxable_amount) as taxable_value'),
+                DB::raw('SUM(invoice_items.igst_amount) as igst'),
+                DB::raw('SUM(invoice_items.cgst_amount) as cgst'),
+                DB::raw('SUM(invoice_items.sgst_amount) as sgst'),
+                DB::raw('SUM(invoice_items.line_total_with_gst) as total')  // 👈 total_amount → line_total_with_gst
+            )
+            ->groupBy('invoice_items.hsn_sac_code')  // 👈 Yahan bhi change
+            ->get();
+
+        return view('reports.gstr1', compact('summary', 'hsnSummary', 'from', 'to'));
+    }
+
+    public function exportGstr1(Request $request)
+    {
+        $format = $request->format ?? 'excel';
+        // Export logic using Laravel Excel or DomPDF
+
+        if ($format === 'excel') {
+            return Excel::download(new Gstr1Export($request->from, $request->to), 'gstr1-report.xlsx');
+        }
+
+        if ($format === 'pdf') {
+            $pdf = PDF::loadView('reports.gstr1-pdf', $data);
+            return $pdf->download('gstr1-report.pdf');
+        }
     }
 
     public function exportExcel(Request $request)

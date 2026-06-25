@@ -588,8 +588,8 @@
     <nav class="navbar navbar-expand-lg sticky-top" id="navbar">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-                <div class="brand-logo">G</div>
-                <span class="brand-name">GST Billing Pro</span>
+                <img src="{{ asset('images/logo.png') }}" alt="InvoiceFlow" style="width:42px; height:42px; border-radius:12px;">
+                <span class="brand-name">InvoiceFlow</span>
             </a>
 
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">

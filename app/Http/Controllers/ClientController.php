@@ -22,11 +22,11 @@ class ClientController extends Controller
     }
 
     public function create()
-{
-    $states = config('indian_states.states');
+    {
+        $states = config('indian_states.states');
 
-    return view('Clients.create', compact('states'));
-}
+        return view('Clients.create', compact('states'));
+    }
 
     public function store(Request $request)
     {
@@ -75,7 +75,10 @@ class ClientController extends Controller
 
         // Add state and status fields
         $validated['state'] = $validated['state_name'];
-        $validated['status'] = $validated['is_active'] ? 'active' : 'inactive';
+        $validated['status'] =
+            !empty($validated['is_active'])
+            ? 'active'
+            : 'inactive';
         $validated['company_id'] = session('current_company_id');
 
         Client::create($validated);
@@ -141,7 +144,10 @@ class ClientController extends Controller
             : 'inter_state';
 
         $validated['state'] = $validated['state_name'];
-        $validated['status'] = isset($validated['is_active']) && $validated['is_active'] ? 'active' : 'inactive';
+        $validated['status'] =
+            !empty($validated['is_active'])
+            ? 'active'
+            : 'inactive';
 
 
         $client->update($validated);

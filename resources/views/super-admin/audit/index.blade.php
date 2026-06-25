@@ -1,55 +1,50 @@
 @extends('layouts.super-admin')
-@section('page-title', 'Audit Trail')
+
+@section('title', 'Audit Trails')
 
 @section('content')
-<div class="space-y-6">
-    <div class="flex justify-between items-center">
-        <h2 class="text-xl font-bold text-gray-800">📋 Audit Trail</h2>
-        <div class="flex gap-3">
-            <input type="date" class="border rounded px-3 py-1 text-sm">
-            <select class="border rounded px-3 py-1 text-sm">
-                <option>All Companies</option>
-                @foreach($companies ?? [] as $c)
-                <option value="{{ $c->id }}">{{ $c->name }}</option>
-                @endforeach
-            </select>
-        </div>
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    <div>
+        <h1 class="text-xl font-bold text-gray-900">Audit Trails</h1>
+        <p class="text-xs text-gray-500 mt-1">Track all system-wide actions and changes.</p>
     </div>
+    <div class="flex items-center gap-2">
+        <input type="date" class="px-3 py-1.5 bg-gray-50 border border-gray-200 text-sm rounded-lg focus:outline-none focus:border-indigo-500 transition">
+        <input type="date" class="px-3 py-1.5 bg-gray-50 border border-gray-200 text-sm rounded-lg focus:outline-none focus:border-indigo-500 transition">
+        <button class="px-4 py-1.5 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition">Filter</button>
+    </div>
+</div>
 
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-left">
-                <tr>
-                    <th class="px-4 py-3">Time</th>
-                    <th class="px-4 py-3">User</th>
-                    <th class="px-4 py-3">Action</th>
-                    <th class="px-4 py-3">Company</th>
-                    <th class="px-4 py-3">Resource</th>
-                    <th class="px-4 py-3">IP</th>
+<div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50/70 text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100">
+                    <th class="px-6 py-4">Action</th>
+                    <th class="px-6 py-4">User</th>
+                    <th class="px-6 py-4">Model</th>
+                    <th class="px-6 py-4">Timestamp</th>
                 </tr>
             </thead>
-            <tbody>
-                @forelse($audits ?? [] as $audit)
-                <tr class="border-t hover:bg-gray-50">
-                    <td class="px-4 py-3 text-xs">{{ $audit->created_at?->format('d M Y H:i') ?? '—' }}</td>
-                    <td class="px-4 py-3 text-xs">{{ $audit->user->name ?? 'System' }}</td>
-                    <td class="px-4 py-3">
-                        <span class="px-2 py-0.5 text-xs rounded-full 
-                            {{ str_contains($audit->event ?? '', 'delete') ? 'bg-red-100 text-red-800' : '' }}
-                            {{ str_contains($audit->event ?? '', 'create') ? 'bg-green-100 text-green-800' : '' }}
-                            {{ str_contains($audit->event ?? '', 'update') ? 'bg-blue-100 text-blue-800' : '' }}">
-                            {{ ucfirst($audit->event ?? '—') }}
-                        </span>
-                    </td>
-                    <td class="px-4 py-3 text-xs">{{ $audit->company->name ?? '—' }}</td>
-                    <td class="px-4 py-3 text-xs">{{ $audit->auditable_type ?? '—' }} #{{ $audit->auditable_id ?? '' }}</td>
-                    <td class="px-4 py-3 text-xs font-mono">{{ $audit->ip_address ?? '—' }}</td>
+            <tbody class="text-sm divide-y divide-gray-100 text-gray-600">
+                <tr class="hover:bg-gray-50/50 transition">
+                    <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700">Created</span></td>
+                    <td class="px-6 py-4">Admin User</td>
+                    <td class="px-6 py-4 font-mono text-xs text-gray-500">Company #12</td>
+                    <td class="px-6 py-4 text-xs text-gray-400">2026-06-20 14:32:10</td>
                 </tr>
-                @empty
-                <tr>
-                    <td colspan="6" class="px-4 py-8 text-center text-gray-500">No audit records yet. Data will appear as users interact with the platform.</td>
+                <tr class="hover:bg-gray-50/50 transition">
+                    <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700">Updated</span></td>
+                    <td class="px-6 py-4">Super Admin</td>
+                    <td class="px-6 py-4 font-mono text-xs text-gray-500">Subscription #5</td>
+                    <td class="px-6 py-4 text-xs text-gray-400">2026-06-20 13:15:45</td>
                 </tr>
-                @endforelse
+                <tr class="hover:bg-gray-50/50 transition">
+                    <td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-50 text-rose-700">Suspended</span></td>
+                    <td class="px-6 py-4">Super Admin</td>
+                    <td class="px-6 py-4 font-mono text-xs text-gray-500">Company #8</td>
+                    <td class="px-6 py-4 text-xs text-gray-400">2026-06-19 10:22:33</td>
+                </tr>
             </tbody>
         </table>
     </div>

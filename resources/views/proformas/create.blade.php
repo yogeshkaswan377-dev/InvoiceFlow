@@ -1,337 +1,79 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Create Proforma Invoice
-            </h2>
-            <a href="{{ url('/proformas') }}" class="text-gray-500 hover:text-gray-700">
-                ← Back to Proformas
-            </a>
+@extends('layouts.app')
+
+@section('title', 'Create Proforma - GST Billing Pro')
+
+@section('content')
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ route('proformas.index') }}" class="btn btn-sm" style="background:#f1f5f9; border-radius:10px; color:#64748b;">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <h2 style="font-size:18px; font-weight:700; margin:0;">Create Proforma Invoice</h2>
+</div>
+
+<form action="{{ route('proformas.store') }}" method="POST" class="row g-4">
+    @csrf
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">Client & Details</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Client *</label>
+                        <select name="client_id" class="form-select" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" required>
+                            <option value="">Select Client</option>
+                            @foreach($clients ?? [] as $client)
+                            <option value="{{ $client->id }}">{{ $client->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Date</label>
+                        <input type="date" name="invoice_date" value="{{ date('Y-m-d') }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Valid Until</label>
+                        <input type="date" name="due_date" value="{{ date('Y-m-d', strtotime('+30 days')) }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                    </div>
+                </div>
+            </div>
         </div>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-
-            <form action="{{ url('/proformas') }}" method="POST" x-data="invoiceBuilder()">
-                @csrf
-
-                <!-- Header Section -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Left Column -->
-                            <div>
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Client *</label>
-                                    <select name="client_id" required
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                        <option value="">Select Client</option>
-                                        @foreach($clients as $client)
-                                        <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
-                                            {{ $client->name }} {{ $client->gstin ? '(GST: ' . $client->gstin . ')' : '' }}
-                                        </option>
-                                        @endforeach
-                                    </select>
-                                    @error('client_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reference Number</label>
-                                    <input type="text" name="reference_number" value="{{ old('reference_number') }}"
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                        placeholder="PO-2026-001">
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="mb-4">
-                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Invoice Date *</label>
-                                        <input type="date" name="invoice_date" required value="{{ old('invoice_date', date('Y-m-d')) }}"
-                                            class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                    </div>
-                                    <div class="mb-4">
-                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Due Date *</label>
-                                        <input type="date" name="due_date" required value="{{ old('due_date', date('Y-m-d', strtotime('+15 days'))) }}"
-                                            class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                    </div>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Terms</label>
-                                    <select name="payment_terms" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                        <option value="Net 7">Net 7 Days</option>
-                                        <option value="Net 15" selected>Net 15 Days</option>
-                                        <option value="Net 30">Net 30 Days</option>
-                                        <option value="Net 45">Net 45 Days</option>
-                                        <option value="Net 60">Net 60 Days</option>
-                                        <option value="Immediate">Immediate</option>
-                                    </select>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Estimated Delivery Date</label>
-                                    <input type="date" name="estimated_delivery_date" value="{{ old('estimated_delivery_date') }}"
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                </div>
-                            </div>
-
-                            <!-- Right Column -->
-                            <div>
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
-                                    <textarea name="notes" rows="3"
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                        placeholder="Additional notes...">{{ old('notes') }}</textarea>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Terms & Conditions</label>
-                                    <textarea name="terms_and_conditions" rows="3"
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                        placeholder="Terms and conditions...">{{ old('terms_and_conditions') }}</textarea>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Logistics Details</label>
-                                    <textarea name="logistics_details" rows="2"
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                        placeholder="Shipping/Delivery details...">{{ old('logistics_details') }}</textarea>
-                                </div>
-                            </div>
-                        </div>
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">Items</h5>
+                <div id="proforma-items">
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-6"><input type="text" name="items[0][name]" class="form-control" style="border-radius:10px; border:1px solid #e2e8f0;" placeholder="Item"></div>
+                        <div class="col-md-2"><input type="number" name="items[0][qty]" class="form-control" style="border-radius:10px; border:1px solid #e2e8f0;" placeholder="Qty" value="1"></div>
+                        <div class="col-md-2"><input type="number" name="items[0][rate]" class="form-control" style="border-radius:10px; border:1px solid #e2e8f0;" placeholder="Rate"></div>
+                        <div class="col-md-2"><input type="number" name="items[0][gst_rate]" class="form-control" style="border-radius:10px; border:1px solid #e2e8f0;" placeholder="GST %" value="18"></div>
                     </div>
                 </div>
-
-                <!-- Items Section -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Items</h3>
-                            <button type="button" @click="addItem()"
-                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
-                                + Add Item
-                            </button>
-                        </div>
-
-                        <!-- Items Table -->
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-700">
-                                    <tr>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 w-5">#</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Item Name</th>
-                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 w-20">Qty</th>
-                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 w-28">Unit Price</th>
-                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 w-24">GST %</th>
-                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 w-28">Line Total</th>
-                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 w-16">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <template x-for="(item, index) in items" :key="index">
-                                        <tr class="border-t border-gray-200 dark:border-gray-700">
-                                            <td class="px-3 py-2 text-sm text-gray-500" x-text="index + 1"></td>
-                                            <td class="px-3 py-2">
-                                                <input type="text" x-model="item.name" :name="'items['+index+'][name]'"
-                                                    required class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 text-sm"
-                                                    placeholder="Item name">
-                                            </td>
-                                            <td class="px-3 py-2">
-                                                <input type="number" x-model="item.quantity" :name="'items['+index+'][quantity]'"
-                                                    min="1" required @input="calculateItemTotal(index)"
-                                                    class="w-full text-center rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 text-sm">
-                                            </td>
-                                            <td class="px-3 py-2">
-                                                <input type="number" x-model="item.unit_price" :name="'items['+index+'][unit_price]'"
-                                                    min="0" step="0.01" required @input="calculateItemTotal(index)"
-                                                    class="w-full text-right rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 text-sm">
-                                            </td>
-                                            <td class="px-3 py-2">
-                                                <select x-model="item.gst_rate" :name="'items['+index+'][gst_rate]'"
-                                                    @change="calculateItemTotal(index)"
-                                                    class="w-full text-center rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 text-sm">
-                                                    <option value="0">0%</option>
-                                                    <option value="5">5%</option>
-                                                    <option value="12">12%</option>
-                                                    <option value="18" selected>18%</option>
-                                                    <option value="28">28%</option>
-                                                </select>
-                                            </td>
-                                            <td class="px-3 py-2 text-right text-sm font-medium" x-text="formatCurrency(item.line_total)"></td>
-                                            <td class="px-3 py-2 text-center">
-                                                <button type="button" @click="removeItem(index)"
-                                                    class="text-red-600 hover:text-red-900 text-sm">✕</button>
-                                            </td>
-                                        </tr>
-                                    </template>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Totals Section -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Discount & Charges -->
-                            <div>
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Discount Type</label>
-                                    <select name="discount_type" x-model="discountType"
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                        <option value="">No Discount</option>
-                                        <option value="percentage">Percentage (%)</option>
-                                        <option value="fixed">Fixed Amount (₹)</option>
-                                    </select>
-                                </div>
-                                <div class="mb-4" x-show="discountType">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Discount Value</label>
-                                    <input type="number" name="discount_amount" x-model="discountAmount"
-                                        min="0" step="0.01" @input="calculateTotals()"
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                </div>
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Shipping Charges</label>
-                                    <input type="number" name="shipping_charges" x-model="shippingCharges"
-                                        min="0" step="0.01" @input="calculateTotals()"
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                </div>
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Commission</label>
-                                    <input type="number" name="commission" x-model="commission"
-                                        min="0" step="0.01" @input="calculateTotals()"
-                                        class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                </div>
-                            </div>
-
-                            <!-- Totals -->
-                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                <div class="flex justify-between mb-2">
-                                    <span class="text-sm text-gray-600 dark:text-gray-400">Subtotal:</span>
-                                    <span class="text-sm font-medium" x-text="formatCurrency(subtotal)"></span>
-                                </div>
-                                <div class="flex justify-between mb-2" x-show="discountAmount > 0">
-                                    <span class="text-sm text-gray-600 dark:text-gray-400">Discount:</span>
-                                    <span class="text-sm font-medium text-red-600">- ₹<span x-text="discountAmount"></span></span>
-                                </div>
-                                <div class="flex justify-between mb-2">
-                                    <span class="text-sm text-gray-600 dark:text-gray-400">Taxable Amount:</span>
-                                    <span class="text-sm font-medium" x-text="formatCurrency(taxableAmount)"></span>
-                                </div>
-                                <div class="flex justify-between mb-2">
-                                    <span class="text-sm text-gray-600 dark:text-gray-400">GST (approx):</span>
-                                    <span class="text-sm font-medium" x-text="formatCurrency(totalGst)"></span>
-                                </div>
-                                <div class="flex justify-between mb-2" x-show="shippingCharges > 0">
-                                    <span class="text-sm text-gray-600 dark:text-gray-400">Shipping:</span>
-                                    <span class="text-sm font-medium">₹<span x-text="shippingCharges"></span></span>
-                                </div>
-                                <div class="flex justify-between mb-2" x-show="commission > 0">
-                                    <span class="text-sm text-gray-600 dark:text-gray-400">Commission:</span>
-                                    <span class="text-sm font-medium">₹<span x-text="commission"></span></span>
-                                </div>
-                                <hr class="my-2 border-gray-300 dark:border-gray-600">
-                                <div class="flex justify-between text-lg font-bold">
-                                    <span class="text-gray-800 dark:text-gray-200">Grand Total:</span>
-                                    <span class="text-gray-800 dark:text-gray-200" x-text="formatCurrency(grandTotal)"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Submit Buttons -->
-                <div class="flex justify-end gap-4">
-                    <button type="submit" name="status" value="draft"
-                        class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg">
-                        Save as Draft
-                    </button>
-                    <button type="submit" name="status" value="sent"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
-                        Save & Send
-                    </button>
-                </div>
-            </form>
-
+                <button type="button" class="btn btn-sm text-white mt-2" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:10px;" onclick="addProformaItem()">
+                    <i class="fas fa-plus me-1"></i> Add Item
+                </button>
+            </div>
         </div>
     </div>
+    <div class="col-lg-4">
+        <button type="submit" class="btn text-white w-100" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:12px; padding:14px; font-weight:600;">
+            <i class="fas fa-save me-2"></i> Save Proforma
+        </button>
+    </div>
+</form>
 
-    <!-- Alpine.js Component -->
-    <script>
-        function invoiceBuilder() {
-            return {
-                items: [],
-                discountType: '',
-                discountAmount: 0,
-                shippingCharges: 0,
-                commission: 0,
-                subtotal: 0,
-                taxableAmount: 0,
-                totalGst: 0,
-                grandTotal: 0,
+<script>
+    let pIndex = 1;
 
-                init() {
-                    this.addItem();
-                    this.calculateTotals();
-                },
-
-                addItem() {
-                    this.items.push({
-                        name: '',
-                        quantity: 1,
-                        unit_price: 0,
-                        gst_rate: 18,
-                        line_total: 0
-                    });
-                    this.calculateTotals();
-                },
-
-                removeItem(index) {
-                    if (this.items.length > 1) {
-                        this.items.splice(index, 1);
-                        this.calculateTotals();
-                    }
-                },
-
-                calculateItemTotal(index) {
-                    const item = this.items[index];
-                    item.line_total = item.quantity * item.unit_price;
-                    this.calculateTotals();
-                },
-
-                calculateTotals() {
-                    // Calculate subtotal
-                    this.subtotal = this.items.reduce((sum, item) => {
-                        return sum + (item.quantity * item.unit_price);
-                    }, 0);
-
-                    // Calculate discount
-                    let discountAmount = parseFloat(this.discountAmount) || 0;
-                    if (this.discountType === 'percentage' && discountAmount > 0) {
-                        discountAmount = this.subtotal * (discountAmount / 100);
-                    }
-
-                    // Calculate taxable
-                    this.taxableAmount = this.subtotal - discountAmount;
-
-                    // Calculate GST (approximate for display)
-                    let avgGstRate = 18;
-                    if (this.items.length > 0) {
-                        avgGstRate = this.items.reduce((sum, item) => sum + parseFloat(item.gst_rate), 0) / this.items.length;
-                    }
-                    this.totalGst = this.taxableAmount * (avgGstRate / 100);
-
-                    // Grand total
-                    const shipping = parseFloat(this.shippingCharges) || 0;
-                    const comm = parseFloat(this.commission) || 0;
-                    this.grandTotal = this.taxableAmount + this.totalGst + shipping + comm;
-                },
-
-                formatCurrency(amount) {
-                    return '₹' + parseFloat(amount || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                }
-            }
-        }
-    </script>
-</x-app-layout>
+    function addProformaItem() {
+        const container = document.getElementById('proforma-items');
+        const row = document.createElement('div');
+        row.className = 'row g-2 mb-2';
+        row.innerHTML = `<div class="col-md-6"><input type="text" name="items[${pIndex}][name]" class="form-control" style="border-radius:10px; border:1px solid #e2e8f0;" placeholder="Item"></div>
+        <div class="col-md-2"><input type="number" name="items[${pIndex}][qty]" class="form-control" style="border-radius:10px; border:1px solid #e2e8f0;" placeholder="Qty" value="1"></div>
+        <div class="col-md-2"><input type="number" name="items[${pIndex}][rate]" class="form-control" style="border-radius:10px; border:1px solid #e2e8f0;" placeholder="Rate"></div>
+        <div class="col-md-2"><input type="number" name="items[${pIndex}][gst_rate]" class="form-control" style="border-radius:10px; border:1px solid #e2e8f0;" placeholder="GST %" value="18"></div>`;
+        container.appendChild(row);
+        pIndex++;
+    }
+</script>
+@endsection

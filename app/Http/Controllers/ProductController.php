@@ -11,16 +11,29 @@ class ProductController extends Controller
     /**
      * Display listing of products
      */
+    // app/Http/Controllers/ProductController.php
+
     public function index(Request $request)
     {
-        $companyId = Auth::user()->current_company_id;
+        $companyId = session('current_company_id') ?? auth()->user()->current_company_id;
 
-        $products = Product::forCompany($companyId)
-            ->when($request->search, fn($q) => $q->search($request->search))
-            ->when($request->status === 'active', fn($q) => $q->active())
-            ->when($request->status === 'inactive', fn($q) => $q->where('is_active', false))
-            ->orderBy('name')
-            ->paginate(15);
+        $query = Product::where('company_id', $companyId);
+
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('hsn_sac_code', 'like', "%{$search}%");
+            });
+        }
+
+        // GST Rate filter
+        if ($request->filled('gst_rate')) {
+            $query->where('gst_rate', $request->gst_rate);
+        }
+
+        $products = $query->latest()->paginate(12);
 
         return view('products.index', compact('products'));
     }

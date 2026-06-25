@@ -1,62 +1,54 @@
 @extends('layouts.super-admin')
-@section('page-title', 'Company Users — ' . $company->name)
+
+@section('title', 'Company Users')
 
 @section('content')
-<div class="space-y-6">
-    <div class="flex items-center gap-3">
-        <a href="{{ route('super-admin.companies.show', $company) }}" class="text-gray-500 hover:text-gray-700">← Back to Company</a>
-    </div>
+<div class="mb-6">
+    <a href="/super-admin/companies/{{ $company->id ?? 1 }}" class="text-sm text-indigo-600 hover:text-indigo-700">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Back to Company
+    </a>
+</div>
 
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-800 flex items-center justify-center font-bold">{{ strtoupper(substr($company->name, 0, 2)) }}</div>
-            <div>
-                <h2 class="text-lg font-bold">{{ $company->name }}</h2>
-                <p class="text-sm text-gray-500">All Users</p>
-            </div>
-        </div>
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    <div>
+        <h1 class="text-xl font-bold text-gray-900">{{ $company->name ?? 'Company' }} — Users</h1>
+        <p class="text-xs text-gray-500 mt-1">Team members belonging to this tenant.</p>
     </div>
+</div>
 
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-left">
-                <tr>
-                    <th class="px-4 py-3">User</th>
-                    <th class="px-4 py-3">Email</th>
-                    <th class="px-4 py-3">Role</th>
-                    <th class="px-4 py-3">Status</th>
-                    <th class="px-4 py-3">Last Login</th>
-                    <th class="px-4 py-3">Actions</th>
+<div class="bg-white rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50/70 text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-gray-100">
+                    <th class="px-6 py-4">User</th>
+                    <th class="px-6 py-4">Email</th>
+                    <th class="px-6 py-4">Role</th>
+                    <th class="px-6 py-4">Joined</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="text-sm divide-y divide-gray-100 text-gray-600">
                 @forelse($users ?? [] as $user)
-                <tr class="border-t hover:bg-gray-50">
-                    <td class="px-4 py-3">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">{{ strtoupper(substr($user->name, 0, 2)) }}</div>
-                            <span class="font-medium">{{ $user->name }}</span>
+                <tr class="hover:bg-gray-50/50 transition">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="h-8 w-8 bg-indigo-50 text-indigo-600 rounded-lg font-bold flex items-center justify-center text-xs">
+                                {{ strtoupper(substr($user->name, 0, 2)) }}
+                            </div>
+                            <span class="font-semibold text-gray-900">{{ $user->name }}</span>
                         </div>
                     </td>
-                    <td class="px-4 py-3 text-xs">{{ $user->email }}</td>
-                    <td class="px-4 py-3">
-                        <select class="border rounded px-2 py-1 text-xs">
-                            <option {{ ($user->roles->first()->name ?? '') === 'owner' ? 'selected' : '' }}>Owner</option>
-                            <option {{ ($user->roles->first()->name ?? '') === 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option {{ ($user->roles->first()->name ?? '') === 'staff' ? 'selected' : '' }}>Staff</option>
-                        </select>
+                    <td class="px-6 py-4 text-gray-500">{{ $user->email }}</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700">
+                            {{ ucfirst($user->role ?? 'Staff') }}
+                        </span>
                     </td>
-                    <td class="px-4 py-3">
-                        <span class="px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-800">Active</span>
-                    </td>
-                    <td class="px-4 py-3 text-xs">{{ $user->last_login_at?->format('d M Y') ?? 'Never' }}</td>
-                    <td class="px-4 py-3">
-                        <button class="text-red-600 hover:underline text-xs">Disable</button>
-                    </td>
+                    <td class="px-6 py-4 text-xs text-gray-400">{{ $user->created_at?->format('d M Y') }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-4 py-8 text-center text-gray-500">No users in this company.</td>
+                    <td colspan="4" class="px-6 py-12 text-center text-gray-400">No users found</td>
                 </tr>
                 @endforelse
             </tbody>

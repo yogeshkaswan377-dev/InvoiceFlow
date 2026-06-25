@@ -1,270 +1,221 @@
-{{-- resources/views/clients/create.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Add New Client')
+@section('title', 'Add New Client - GST Billing Pro')
 
 @section('content')
-<div class="py-12" x-data="clientForm()" x-init="init()">
-    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 bg-white border-b border-gray-200">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold">Add New Client</h2>
-                    <a href="{{ url('/clients') }}" class="text-gray-600 hover:text-gray-900">← Back to Clients</a>
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ route('clients.index') }}" class="btn btn-sm" style="background:#f1f5f9; border-radius:10px; color:#64748b;">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <h2 style="font-size:18px; font-weight:700; margin:0;">Add New Client</h2>
+</div>
+
+<form action="{{ route('clients.store') }}" method="POST" class="row g-4">
+    @csrf
+
+    <div class="col-lg-8">
+        {{-- Client Type Selection --}}
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3"><i class="fas fa-tag me-2 text-primary"></i>Client Type</h5>
+                <div class="d-flex gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="client_type" id="type_business" value="business" {{ old('client_type') == 'individual' ? '' : 'checked' }}>
+                        <label class="form-check-label fw-semibold" for="type_business">
+                            <i class="fas fa-building me-1"></i> Business
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="client_type" id="type_individual" value="individual" {{ old('client_type') == 'individual' ? 'checked' : '' }}>
+                        <label class="form-check-label fw-semibold" for="type_individual">
+                            <i class="fas fa-user me-1"></i> Individual
+                        </label>
+                    </div>
                 </div>
+            </div>
+        </div>
 
-                <form method="POST" action="{{ url('/clients') }}" @submit="validateForm">
-                    @csrf
+        {{-- Client Information --}}
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-user me-2 text-primary"></i>Client Information</h5>
 
-                    <!-- Client Type Selection -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Client Type</label>
-                        <div class="flex space-x-4">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="client_type" value="business" x-model="clientType" @change="onClientTypeChange" class="form-radio text-blue-600">
-                                <span class="ml-2">Business</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="client_type" value="individual" x-model="clientType" @change="onClientTypeChange" class="form-radio text-blue-600">
-                                <span class="ml-2">Individual</span>
-                            </label>
-                        </div>
-                        @error('client_type')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Full Name *</label>
+                        <input type="text" name="name" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" value="{{ old('name') }}" required>
                     </div>
 
-                    <!-- Basic Information -->
-                    <div class="border-t pt-6 mb-6">
-                        <h3 class="text-lg font-semibold mb-4">Basic Information</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person Name *</label>
-                                <input type="text" name="name" x-model="form.name" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200" required>
-                                @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
+                    {{-- Company Name (Business only) --}}
+                    <div class="col-md-6" id="company_name_field">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Company Name <span class="text-danger" id="company_required">*</span></label>
+                        <input type="text" name="company_name" id="company_name_input" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" value="{{ old('company_name') }}">
+                    </div>
 
-                            <div x-show="clientType === 'business'">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
-                                <input type="text" name="company_name" x-model="form.company_name" class="w-full rounded-md border-gray-300 shadow-sm">
-                                @error('company_name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Email</label>
+                        <input type="email" name="email" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" value="{{ old('email') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:13px;">Phone</label>
+                        <input type="text" name="phone" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" value="{{ old('phone') }}">
+                    </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                                <input type="email" name="email" x-model="form.email" class="w-full rounded-md border-gray-300 shadow-sm">
-                                @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
+                    {{-- GSTIN (Business only) --}}
+                    <div class="col-md-6" id="gstin_field">
+                        <label class="form-label fw-semibold" style="font-size:13px;">GSTIN <span class="text-danger" id="gstin_required">*</span></label>
+                        <input type="text" name="gstin" id="gstin_input" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px; text-transform:uppercase;" value="{{ old('gstin') }}" placeholder="22AAAAA0000A1Z5" maxlength="15">
+                    </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                                <input type="text" name="phone" x-model="form.phone" class="w-full rounded-md border-gray-300 shadow-sm">
-                                @error('phone') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
+                    {{-- PAN --}}
+                    <div class="col-md-6" id="pan_field">
+                        <label class="form-label fw-semibold" style="font-size:13px;">PAN</label>
+                        <input type="text" name="pan" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px; text-transform:uppercase;" value="{{ old('pan') }}" placeholder="AAAAA0000A" maxlength="10">
+                    </div>
+
+                    {{-- Individual Notice --}}
+                    <div class="col-12 d-none" id="individual_notice">
+                        <div class="alert border-0 rounded-3 mb-0" style="background:#f0fdf4; color:#166534;">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>B2C Client:</strong> GSTIN not required. Invoices will be marked as B2C.
                         </div>
                     </div>
-
-                    <!-- GST Details (Conditional) -->
-                    <div class="border-t pt-6 mb-6" x-show="clientType === 'business'">
-                        <h3 class="text-lg font-semibold mb-4">GST Details</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">GSTIN *</label>
-                                <input type="text" name="gstin" x-model="form.gstin"
-                                    @blur="validateGSTIN"
-                                    class="w-full rounded-md border-gray-300 shadow-sm"
-                                    :class="{'border-red-500': gstinError}">
-                                <p x-show="gstinError" class="text-red-500 text-xs mt-1" x-text="gstinError"></p>
-                                @error('gstin') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">PAN</label>
-                                <input type="text" name="pan" x-model="form.pan" class="w-full rounded-md border-gray-300 shadow-sm">
-                                @error('pan') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Address Details -->
-                    <div class="border-t pt-6 mb-6">
-                        <h3 class="text-lg font-semibold mb-4">Address Details</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Address Line 1</label>
-                                <input type="text" name="address_line_1" x-model="form.address_line_1" class="w-full rounded-md border-gray-300 shadow-sm">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Address Line 2</label>
-                                <input type="text" name="address_line_2" x-model="form.address_line_2" class="w-full rounded-md border-gray-300 shadow-sm">
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
-                                    <input type="text" name="city" x-model="form.city" class="w-full rounded-md border-gray-300 shadow-sm">
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">State</label>
-                                    <select
-                                        name="state_code"
-                                        x-model="form.state_code"
-                                        @change="onStateChange"
-                                        class="w-full rounded-md border-gray-300 shadow-sm">
-                                        <option value="">Select State</option>
-
-                                        @foreach($states as $code => $name)
-                                        <option value="{{ $code }}">
-                                            {{ $name }}
-                                        </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
-                                    <input type="text" name="pincode" x-model="form.pincode" class="w-full rounded-md border-gray-300 shadow-sm">
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Country</label>
-                                <input type="text" name="country" x-model="form.country" class="w-full rounded-md border-gray-300 shadow-sm">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Business Settings -->
-                    <div class="border-t pt-6 mb-6">
-                        <h3 class="text-lg font-semibold mb-4">Business Settings</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Credit Limit</label>
-                                <input type="number" step="0.01" name="credit_limit" x-model="form.credit_limit" class="w-full rounded-md border-gray-300 shadow-sm">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Terms (days)</label>
-                                <input type="number" name="payment_terms" x-model="form.payment_terms" class="w-full rounded-md border-gray-300 shadow-sm">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                                <textarea name="notes" x-model="form.notes" rows="3" class="w-full rounded-md border-gray-300 shadow-sm"></textarea>
-                            </div>
-
-                            <div>
-                                <label class="flex items-center">
-                                    <input type="checkbox" name="is_active" value="1" x-model="form.is_active" class="form-checkbox text-blue-600">
-                                    <span class="ml-2 text-sm text-gray-700">Active</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Submit Buttons -->
-                    <div class="flex justify-end space-x-3 border-t pt-6">
-                        <a href="{{ url('/clients') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">Cancel</a>
-                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Create Client</button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-map-marker-alt me-2 text-danger"></i>Address</h5>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:13px;">Address Line 1</label>
+                    <textarea name="address_line_1" rows="2" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">{{ old('address_line_1') }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:13px;">City</label>
+                    <input type="text" name="city" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" value="{{ old('city') }}">
+                </div>
+
+                <div class="row g-3">
+                    {{-- State Search (Alpine.js - same as edit form) --}}
+                    <div class="col-6 position-relative" x-data="stateSearch()">
+                        <label class="form-label fw-semibold mb-2" style="font-size:13px;">State *</label>
+
+                        <input type="hidden" name="state_name" :value="selectedState?.name || ''">
+                        <input type="hidden" name="state_code" :value="selectedState?.code || ''">
+
+                        <div class="position-relative">
+                            <input
+                                type="text"
+                                x-model="search"
+                                @focus="showDropdown=true"
+                                @input="showDropdown=true"
+                                placeholder="Search state or code"
+                                class="form-control"
+                                style="height:48px; border-radius:14px; padding-left:42px; border:1px solid #dbe4f0; background:#fff;"
+                                autocomplete="off"
+                                required>
+                            <i class="fas fa-location-dot" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#94a3b8;"></i>
+                        </div>
+
+                        <div
+                            x-show="showDropdown"
+                            x-transition
+                            @click.outside="showDropdown=false"
+                            class="shadow-lg border-0 mt-2"
+                            style="position:absolute; width:100%; background:white; border-radius:14px; overflow:hidden; max-height:260px; overflow-y:auto; z-index:999;">
+
+                            <template x-for="state in filteredStates" :key="state.code">
+                                <div @click="selectState(state)"
+                                    style="padding:14px 16px; cursor:pointer; border-bottom:1px solid #f1f5f9;"
+                                    onmouseover="this.style.background='#f8fafc'"
+                                    onmouseout="this.style.background='white'">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-semibold" x-text="state.name"></span>
+                                        <span class="badge" style="background:#eff6ff; color:#2563eb; border-radius:10px;" x-text="state.code"></span>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <div x-show="filteredStates.length===0" class="text-center p-3 text-muted">
+                                No state found
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Pincode --}}
+                    <div class="col-6">
+                        <label class="form-label fw-semibold mb-2" style="font-size:13px;">Pincode</label>
+                        <input
+                            type="text"
+                            name="pincode"
+                            value="{{ old('pincode') }}"
+                            class="form-control"
+                            placeholder="380001"
+                            style="height:48px; border-radius:14px; border:1px solid #dbe4f0; padding:0 16px;">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Hidden Fields --}}
+            <input type="hidden" name="country" value="India">
+            <input type="hidden" name="is_active" value="1">
+        </div>
+
+        <button type="submit" class="btn text-white w-100" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:12px; padding:14px; font-weight:600; font-size:15px;">
+            <i class="fas fa-save me-2"></i> Save Client
+        </button>
+    </div>
+</form>
+@endsection
 
 @push('scripts')
 <script>
-    function clientForm() {
-        return {
-            clientType: 'business',
-            gstinError: '',
-            form: {
-                name: '',
-                company_name: '',
-                email: '',
-                phone: '',
-                gstin: '',
-                pan: '',
-                address_line_1: '',
-                address_line_2: '',
-                city: '',
-                state_code: '',
-                pincode: '',
-                country: 'India',
-                credit_limit: 0,
-                payment_terms: '',
-                notes: '',
-                is_active: true
-            },
+    // Toggle fields based on client type
+    document.addEventListener('DOMContentLoaded', function() {
+        const businessRadio = document.getElementById('type_business');
+        const individualRadio = document.getElementById('type_individual');
+        const companyField = document.getElementById('company_name_field');
+        const companyInput = document.getElementById('company_name_input');
+        const companyRequired = document.getElementById('company_required');
+        const gstinField = document.getElementById('gstin_field');
+        const gstinInput = document.getElementById('gstin_input');
+        const gstinRequired = document.getElementById('gstin_required');
+        const panField = document.getElementById('pan_field');
+        const individualNotice = document.getElementById('individual_notice');
 
-            init() {
-                // Any initialization logic
-            },
-
-            onClientTypeChange() {
-                if (this.clientType === 'individual') {
-                    this.form.gstin = '';
-                    this.form.company_name = '';
-                }
-            },
-
-            async validateGSTIN() {
-                if (!this.form.gstin) {
-                    this.gstinError = '';
-                    return;
-                }
-
-                // Client-side validation
-                const gstin = this.form.gstin.toUpperCase();
-                if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[0-9A-Z]{1}[0-9A-Z]{1}$/.test(gstin)) {
-                    this.gstinError = 'Invalid GSTIN format';
-                    return;
-                }
-
-                // Extract state from GSTIN
-                const stateCode = gstin.substring(0, 2);
-                if (stateCode && !this.form.state_code) {
-                    this.form.state_code = stateCode;
-                    this.onStateChange();
-                }
-
-                this.gstinError = '';
-            },
-
-            onStateChange() {
-                // Auto-calculate place of supply would happen on server
-                // This is just for UX feedback
-                if (this.form.state_code) {
-                    console.log('State selected:', this.form.state_code);
-                }
-            },
-
-            validateForm(event) {
-                if (this.clientType === 'business' && !this.form.gstin) {
-                    event.preventDefault();
-                    alert('GSTIN is required for business clients');
-                    return false;
-                }
-
-                if (!this.form.name) {
-                    event.preventDefault();
-                    alert('Contact person name is required');
-                    return false;
-                }
-
-                if (this.clientType === 'business' && !this.form.company_name) {
-                    event.preventDefault();
-                    alert('Company name is required for business clients');
-                    return false;
-                }
-
-                return true;
+        function toggleFields() {
+            if (individualRadio.checked) {
+                // Individual
+                companyField.classList.add('d-none');
+                companyInput.removeAttribute('required');
+                companyRequired.style.display = 'none';
+                gstinField.classList.add('d-none');
+                gstinInput.removeAttribute('required');
+                gstinRequired.style.display = 'none';
+                panField.classList.add('d-none');
+                individualNotice.classList.remove('d-none');
+            } else {
+                // Business
+                companyField.classList.remove('d-none');
+                companyInput.setAttribute('required', 'required');
+                companyRequired.style.display = 'inline';
+                gstinField.classList.remove('d-none');
+                gstinInput.setAttribute('required', 'required');
+                gstinRequired.style.display = 'inline';
+                panField.classList.remove('d-none');
+                individualNotice.classList.add('d-none');
             }
         }
-    }
+
+        businessRadio.addEventListener('change', toggleFields);
+        individualRadio.addEventListener('change', toggleFields);
+
+        // Run on page load
+        toggleFields();
+    });
 </script>
 @endpush
-@endsection

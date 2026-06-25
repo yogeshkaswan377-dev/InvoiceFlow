@@ -9,7 +9,7 @@
     <title>@yield('title', 'Dashboard') | GST Billing Pro</title>
     <meta name="description" content="Professional GST billing & invoicing software">
 
-    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <meta name="theme-color" content="#1e3a8a">
 
     <!-- Google Fonts -->
@@ -561,10 +561,12 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <div class="brand-icon">G</div>
+            <div class="brand-icon" style="background:none;">
+                <img src="{{ asset('images/logo.png') }}" alt="InvoiceFlow" style="width:42px; height:42px; border-radius:12px;">
+            </div>
             <div class="brand-text">
-                GST Billing Pro
-                <small>Professional Invoicing</small>
+                InvoiceFlow
+                <small>Smart GST Billing</small>
             </div>
         </div>
 
@@ -589,6 +591,9 @@
             </a>
             <a href="{{ route('company.settings') }}" class="nav-item {{ request()->routeIs('company.*') ? 'active' : '' }}">
                 <i class="fas fa-cog"></i> Settings
+            </a>
+            <a href="{{ route('profile.edit') }}" class="nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                <i class="fas fa-user"></i> Profile
             </a>
         </nav>
 
@@ -616,42 +621,12 @@
             </button>
             <h1>@yield('title', 'Dashboard')</h1>
         </div>
-
-        <div style="display:flex; align-items:center; gap:12px;">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search anything...">
-            </div>
-            <button style="background:none; border:none; font-size:16px; color:#64748b; cursor:pointer; position:relative;">
-                <i class="fas fa-bell"></i>
-                <span style="position:absolute; top:0; right:0; width:7px; height:7px; background:#ef4444; border-radius:50%;"></span>
-            </button>
-        </div>
     </header>
 
     <!-- Main Content -->
     <main class="main-content">
         @yield('content')
     </main>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="bottom-nav">
-        <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <i class="fas fa-th-large"></i> Home
-        </a>
-        <a href="{{ route('gst-invoices.index') }}" class="{{ request()->routeIs('gst-invoices.*') ? 'active' : '' }}">
-            <i class="fas fa-file-invoice"></i> Invoices
-        </a>
-        <a href="{{ route('gst-invoices.create') }}">
-            <div class="fab"><i class="fas fa-plus"></i></div>
-        </a>
-        <a href="{{ route('clients.index') }}" class="{{ request()->routeIs('clients.*') ? 'active' : '' }}">
-            <i class="fas fa-users"></i> Clients
-        </a>
-        <a href="{{ route('reports.gstr1') }}" class="{{ request()->routeIs('reports.*') ? 'active' : '' }}">
-            <i class="fas fa-chart-bar"></i> Reports
-        </a>
-    </nav>
 
     <script>
         function toggleSidebar() {

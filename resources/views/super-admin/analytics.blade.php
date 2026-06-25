@@ -1,78 +1,23 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800">Platform Analytics</h2>
-    </x-slot>
+@extends('layouts.super-admin')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+@section('title', 'Analytics')
 
-            <!-- Stats -->
-            <div class="grid grid-cols-3 gap-6 mb-8">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <p class="text-sm text-gray-500">Total Revenue</p>
-                    <p class="text-3xl font-bold text-green-600">₹{{ number_format($totalRevenue, 0) }}</p>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <p class="text-sm text-gray-500">Companies by Plan</p>
-                    <div class="mt-2 space-y-1">
-                        @foreach($companiesByPlan as $plan)
-                        <div class="flex justify-between text-sm">
-                            <span class="capitalize">{{ $plan->subscription_plan }}</span>
-                            <span class="font-bold">{{ $plan->count }}</span>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <p class="text-sm text-gray-500">Current Month</p>
-                    <p class="text-3xl font-bold">{{ now()->format('F Y') }}</p>
-                </div>
-            </div>
+@section('content')
+<div class="mb-6">
+    <h1 class="text-xl font-bold text-gray-900">Engine Core Analytics</h1>
+    <p class="text-xs text-gray-500 mt-1">Visual database usage graphs, bandwidth usage pools, and latency metrics charts.</p>
+</div>
 
-            <!-- Revenue Chart -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold mb-4">Monthly Revenue</h3>
-                <canvas id="revenueChart" height="200"></canvas>
-            </div>
-        </div>
-    </div>
-
-    @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        new Chart(document.getElementById('revenueChart'), {
-            type: 'line',
-            data: {
-                labels: {
-                    !!json_encode($monthlyRevenue - > pluck('month') - > map(function($m) {
-                        return date('F', mktime(0, 0, 0, $m, 1));
-                    })) !!
-                },
-                datasets: [{
-                    label: 'Revenue (₹)',
-                    data: {
-                        !!json_encode($monthlyRevenue - > pluck('total')) !!
-                    },
-                    borderColor: '#6366F1',
-                    backgroundColor: 'rgba(99,102,241,0.1)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    </script>
-    @endpush
-</x-app-layout>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <a href="/super-admin/analytics" class="bg-white rounded-2xl shadow-sm border border-gray-200/60 p-6 hover:shadow-md transition">
+        <i class="fa-solid fa-chart-line text-2xl text-indigo-600 mb-2 block"></i>
+        <h3 class="font-semibold text-gray-900">Revenue Analytics</h3>
+        <p class="text-xs text-gray-500 mt-1">Platform-wide revenue charts</p>
+    </a>
+    <a href="/super-admin/analytics" class="bg-white rounded-2xl shadow-sm border border-gray-200/60 p-6 hover:shadow-md transition">
+        <i class="fa-solid fa-users text-2xl text-emerald-600 mb-2 block"></i>
+        <h3 class="font-semibold text-gray-900">User Growth</h3>
+        <p class="text-xs text-gray-500 mt-1">Signup & conversion metrics</p>
+    </a>
+</div>
+@endsection

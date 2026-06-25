@@ -26,25 +26,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('dashboard');
 
     // Company Management
-    Route::prefix('company')->group(function () {
-
-        Route::get('/create', [CompanyController::class, 'create'])
-            ->name('company.create');
-
-        Route::post('/store', [CompanyController::class, 'store'])
-            ->name('company.store');
-
-        Route::get('/switch', [CompanyController::class, 'switchCompany'])
-            ->name('company.switch');
-
-        Route::post('/switch/{company}', [CompanyController::class, 'setCurrentCompany'])
-            ->name('company.set');
-
-        Route::get('/settings', [CompanyController::class, 'settings'])
-            ->name('company.settings');
-
-        Route::put('/settings/{company}', [CompanyController::class, 'update'])
-            ->name('company.update');
+    Route::prefix('company')->name('company.')->middleware(['auth', 'verified'])->group(function () {
+        Route::get('/settings', [CompanyController::class, 'settings'])->name('settings');
+        Route::put('/settings', [CompanyController::class, 'updateSettings'])->name('settings.update');
+        Route::put('/gst', [CompanyController::class, 'updateGst'])->name('gst.update');
+        Route::put('/bank', [CompanyController::class, 'updateBank'])->name('bank.update');
+        Route::put('/preferences', [CompanyController::class, 'updatePreferences'])->name('preferences.update');
+        Route::get('/create', [CompanyController::class, 'create'])->name('create');
+        Route::post('/store', [CompanyController::class, 'store'])->name('store');
+        Route::get('/switch', [CompanyController::class, 'switch'])->name('switch');
+        Route::get('/switch/{id}', [CompanyController::class, 'switchTo'])->name('switch-to');
     });
 
     // App Settings
@@ -213,10 +204,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/gst-invoices/{id}/send-email', [GSTInvoiceController::class, 'sendEmail'])->name('gst-invoices.send-email');
         });
 
-
-
-    Route::get('/gstr1', [ReportController::class, 'gstr1'])->name('gstr1');
-
     // Reports
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/outstanding', [ReportController::class, 'outstanding'])->name('outstanding');
@@ -298,5 +285,4 @@ Route::middleware(['auth', 'verified', 'company.selected'])->group(function () {
 Route::get('/invite/{token}', [App\Http\Controllers\StaffController::class, 'acceptInvite'])->name('invite.accept');
 Route::post('/invite/{token}/register', [App\Http\Controllers\StaffController::class, 'registerFromInvite'])->name('invite.register');
 
-require __DIR__ . '/auth.php';
 require __DIR__ . '/auth.php';

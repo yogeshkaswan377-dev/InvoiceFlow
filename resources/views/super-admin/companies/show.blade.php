@@ -1,31 +1,86 @@
 @extends('layouts.super-admin')
-@section('page-title', 'Company Details')
+
+@section('title', 'Company Details')
 
 @section('content')
-<div class="space-y-6">
-    <div class="flex justify-between items-center">
-        <h2 class="text-xl font-bold">{{ $company->name }}</h2>
-        <span class="px-3 py-1 text-sm rounded-full {{ $company->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">{{ $company->is_active ? 'Active' : 'Suspended' }}</span>
+<div class="mb-6">
+    <a href="/super-admin/companies" class="text-sm text-indigo-600 hover:text-indigo-700">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Back to Companies
+    </a>
+</div>
+
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    <div class="flex items-center gap-4">
+        <div class="h-14 w-14 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+            {{ strtoupper(substr($company->name ?? 'C', 0, 2)) }}
+        </div>
+        <div>
+            <h1 class="text-xl font-bold text-gray-900">{{ $company->name ?? 'Company Name' }}</h1>
+            <p class="text-sm text-gray-500">{{ $company->email ?? 'No email' }}</p>
+        </div>
+    </div>
+    <div class="flex items-center gap-2">
+        @if($company->is_active ?? true)
+        <button class="px-4 py-1.5 bg-rose-50 text-rose-700 text-sm font-semibold rounded-lg hover:bg-rose-100 transition">Suspend</button>
+        @else
+        <button class="px-4 py-1.5 bg-emerald-50 text-emerald-700 text-sm font-semibold rounded-lg hover:bg-emerald-100 transition">Activate</button>
+        @endif
+    </div>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200/60">
+        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">GSTIN</span>
+        <h3 class="text-lg font-bold text-gray-900 mt-1 font-mono">{{ $company->gstin ?? 'N/A' }}</h3>
+    </div>
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200/60">
+        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Plan</span>
+        <h3 class="text-lg font-bold text-indigo-600 mt-1">{{ ucfirst($company->subscription_plan ?? 'Trial') }}</h3>
+    </div>
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200/60">
+        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Total Users</span>
+        <h3 class="text-lg font-bold text-gray-900 mt-1">{{ $company->users_count ?? 1 }}</h3>
+    </div>
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200/60">
+        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Total Invoices</span>
+        <h3 class="text-lg font-bold text-gray-900 mt-1">{{ $company->invoices_count ?? 0 }}</h3>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Company Details</h3>
+        <div class="space-y-3">
+            <div class="flex justify-between text-sm py-2 border-b border-gray-100">
+                <span class="text-gray-400">Address</span>
+                <span class="font-medium text-gray-900 text-right">{{ $company->address ?? 'N/A' }}</span>
+            </div>
+            <div class="flex justify-between text-sm py-2 border-b border-gray-100">
+                <span class="text-gray-400">City</span>
+                <span class="font-medium text-gray-900">{{ $company->city ?? 'N/A' }}</span>
+            </div>
+            <div class="flex justify-between text-sm py-2 border-b border-gray-100">
+                <span class="text-gray-400">State</span>
+                <span class="font-medium text-gray-900">{{ $company->state ?? 'N/A' }}</span>
+            </div>
+            <div class="flex justify-between text-sm py-2">
+                <span class="text-gray-400">Joined</span>
+                <span class="font-medium text-gray-900">{{ $company->created_at?->format('d M Y') }}</span>
+            </div>
+        </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="font-semibold mb-3">Company Info</h3>
-            <dl class="space-y-2 text-sm">
-                <div class="flex justify-between"><span class="text-gray-500">GSTIN</span><span>{{ $company->gstin ?? '—' }}</span></div>
-                <div class="flex justify-between"><span class="text-gray-500">State</span><span>{{ $company->state_code ?? '—' }}</span></div>
-                <div class="flex justify-between"><span class="text-gray-500">Plan</span><span class="capitalize">{{ $company->subscription_plan }}</span></div>
-                <div class="flex justify-between"><span class="text-gray-500">Joined</span><span>{{ $company->created_at->format('d M Y') }}</span></div>
-            </dl>
-        </div>
-        <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="font-semibold mb-3">Stats</h3>
-            <dl class="space-y-2 text-sm">
-                <div class="flex justify-between"><span class="text-gray-500">Users</span><span>{{ $company->users_count }}</span></div>
-                <div class="flex justify-between"><span class="text-gray-500">Clients</span><span>{{ $company->clients_count ?? 0 }}</span></div>
-                <div class="flex justify-between"><span class="text-gray-500">Invoices</span><span>{{ $company->invoices_count }}</span></div>
-                <div class="flex justify-between"><span class="text-gray-500">Revenue</span><span>₹{{ number_format($company->invoices_sum_grand_total ?? 0, 0) }}</span></div>
-            </dl>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Quick Links</h3>
+        <div class="grid grid-cols-2 gap-3">
+            <a href="/super-admin/companies/{{ $company->id }}/users" class="p-4 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition text-center">
+                <i class="fa-solid fa-users text-indigo-600 text-xl mb-1 block"></i>
+                <span class="text-sm font-medium text-gray-700">Users</span>
+            </a>
+            <a href="/super-admin/companies/{{ $company->id }}/invoices" class="p-4 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition text-center">
+                <i class="fa-solid fa-file-invoice text-emerald-600 text-xl mb-1 block"></i>
+                <span class="text-sm font-medium text-gray-700">Invoices</span>
+            </a>
         </div>
     </div>
 </div>

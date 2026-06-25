@@ -1,64 +1,45 @@
-<section>
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Profile Information') }}
-        </h2>
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-4"><i class="fas fa-user-circle me-2 text-primary"></i>Profile Information</h5>
 
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __("Update your account's profile information and email address.") }}
-        </p>
-    </header>
+        <form action="{{ route('profile.update') }}" method="POST">
+            @csrf @method('PATCH')
 
-    <form id="send-verification" method="post" action="{{ route('verification.send') }}">
-        @csrf
-    </form>
-
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
-        @csrf
-        @method('patch')
-
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
-        </div>
-
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
-
-            @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-                <div>
-                    <p class="text-sm mt-2 text-gray-800">
-                        {{ __('Your email address is unverified.') }}
-
-                        <button form="send-verification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            {{ __('Click here to re-send the verification email.') }}
-                        </button>
-                    </p>
-
-                    @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600">
-                            {{ __('A new verification link has been sent to your email address.') }}
-                        </p>
-                    @endif
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" style="font-size:13px;">Name *</label>
+                    <input type="text" name="name" value="{{ old('name', auth()->user()->name) }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" required>
+                    <x-input-error :messages="$errors->get('name')" class="mt-1" />
                 </div>
-            @endif
-        </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" style="font-size:13px;">Email *</label>
+                    <input type="email" name="email" value="{{ old('email', auth()->user()->email) }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;" required>
+                    <x-input-error :messages="$errors->get('email')" class="mt-1" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" style="font-size:13px;">Phone</label>
+                    <input type="text" name="phone" value="{{ old('phone', auth()->user()->phone) }}" class="form-control" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" style="font-size:13px;">Timezone</label>
+                    <select name="timezone" class="form-select" style="border-radius:12px; border:1px solid #e2e8f0; padding:10px 14px;">
+                        <option value="Asia/Kolkata" {{ (auth()->user()->timezone ?? 'Asia/Kolkata') == 'Asia/Kolkata' ? 'selected' : '' }}>IST (India)</option>
+                        <option value="Asia/Dubai">GST (Dubai)</option>
+                        <option value="America/New_York">EST (New York)</option>
+                    </select>
+                </div>
+            </div>
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
-
-            @if (session('status') === 'profile-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600"
-                >{{ __('Saved.') }}</p>
-            @endif
-        </div>
-    </form>
-</section>
+            <div class="mt-4">
+                <button type="submit" class="btn text-white" style="background:linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius:12px; padding:10px 24px; font-weight:600;">
+                    <i class="fas fa-save me-2"></i> Save
+                </button>
+                @if(session('status') === 'profile-updated')
+                <span class="text-success ms-2" style="font-size:13px;">
+                    <i class="fas fa-check-circle me-1"></i> Saved!
+                </span>
+                @endif
+            </div>
+        </form>
+    </div>
+</div>
